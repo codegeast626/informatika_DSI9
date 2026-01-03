@@ -3,993 +3,1083 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Waspada Malware di Dunia Digital</title>
+  <title>Malware dan Ancaman Digital</title>
+  <script src="/_sdk/element_sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      box-sizing: border-box;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-    
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-10px); }
-      75% { transform: translateX(10px); }
-    }
-    
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-    
-    .animate-fadeIn {
-      animation: fadeIn 0.5s ease-out;
-    }
-    
-    .animate-bounce-once {
-      animation: bounce 0.6s ease-in-out;
-    }
-    
-    .animate-shake {
-      animation: shake 0.5s ease-in-out;
-    }
-    
-    .animate-pulse-slow {
-      animation: pulse 2s ease-in-out infinite;
-    }
-    
-    .dragging {
-      opacity: 0.5;
-      transform: rotate(5deg);
-    }
-    
-    .drop-zone-active {
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
-    }
-    
-    .card-success {
-      animation: bounce 0.6s ease-in-out;
-    }
-    
-    .card-error {
-      animation: shake 0.5s ease-in-out;
-    }
-  </style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .pulse-animation {
+            animation: pulse 0.6s ease-in-out;
+        }
+        
+        .option-button {
+            transition: all 0.3s ease;
+        }
+        
+        .option-button:hover:not(:disabled) {
+            transform: translateX(8px);
+        }
+        
+        .option-button:disabled {
+            cursor: not-allowed;
+        }
+    </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
-  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
  </head>
- <body class="h-full overflow-auto" style="background-color: #0f172a; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif;">
-  <div id="app" class="w-full h-full"></div>
+ <body class="h-full">
+  <div id="app" class="w-full h-full overflow-auto"></div>
   <script>
-    // Audio Context untuk sound effects
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext();
+        const defaultConfig = {
+            quiz_title: "Malware dan Ancaman Digital",
+            quiz_subtitle: "Keamanan Digital dan Ancaman Malware",
+            start_button_text: "Mulai",
+            next_button_text: "Soal Berikutnya",
+            finish_button_text: "Lihat Hasil TKA",
+            restart_button_text: "Ulangi TKA",
+            background_color: "#fef3c7",
+            surface_color: "#ffffff",
+            text_color: "#1f2937",
+            primary_action_color: "#f59e0b",
+            secondary_action_color: "#8b5cf6",
+            font_family: "system-ui",
+            font_size: 16
+        };
 
-    // Fungsi untuk membuat sound effects
-    function playSound(type) {
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      
-      const now = audioCtx.currentTime;
-      
-      switch(type) {
-        case 'correct':
-          // Sound sukses - nada naik
-          oscillator.frequency.setValueAtTime(523.25, now); // C5
-          oscillator.frequency.setValueAtTime(659.25, now + 0.1); // E5
-          oscillator.frequency.setValueAtTime(783.99, now + 0.2); // G5
-          gainNode.gain.setValueAtTime(0.3, now);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-          oscillator.start(now);
-          oscillator.stop(now + 0.3);
-          break;
-          
-        case 'wrong':
-          // Sound error - nada turun
-          oscillator.frequency.setValueAtTime(392, now); // G4
-          oscillator.frequency.setValueAtTime(293.66, now + 0.15); // D4
-          gainNode.gain.setValueAtTime(0.3, now);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-          oscillator.start(now);
-          oscillator.stop(now + 0.25);
-          break;
-          
-        case 'click':
-          // Sound klik button
-          oscillator.frequency.setValueAtTime(800, now);
-          gainNode.gain.setValueAtTime(0.1, now);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-          oscillator.start(now);
-          oscillator.stop(now + 0.1);
-          break;
-          
-        case 'complete':
-          // Sound level complete - melodi kemenangan
-          const notes = [523.25, 587.33, 659.25, 783.99, 880];
-          notes.forEach((freq, index) => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.frequency.setValueAtTime(freq, now + index * 0.1);
-            gain.gain.setValueAtTime(0.2, now + index * 0.1);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + index * 0.1 + 0.2);
-            osc.start(now + index * 0.1);
-            osc.stop(now + index * 0.1 + 0.2);
-          });
-          break;
-          
-        case 'drag':
-          // Sound pickup
-          oscillator.frequency.setValueAtTime(400, now);
-          oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.05);
-          gainNode.gain.setValueAtTime(0.1, now);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-          oscillator.start(now);
-          oscillator.stop(now + 0.05);
-          break;
-      }
-    }
-
-    const config = {
-      app_title: "Waspada Malware di Dunia Digital",
-      welcome_text: "Mari belajar mengenali jenis-jenis malware!",
-      instruction_text: "Seret kartu malware ke kategori yang tepat",
-      background_color: "#0f172a",
-      surface_color: "#1e293b",
-      text_color: "#f1f5f9",
-      primary_color: "#3b82f6",
-      secondary_color: "#10b981",
-      font_size: 16
-    };
-
-    const malwareData = {
-      virus: {
-        name: "Virus",
-        icon: "🦠",
-        color: "#ef4444",
-        description: "",
-        levels: [
-          // Level 1 - Mudah
-          [
+        const allQuestions = [
+            // Pilihan Ganda Biasa
             {
-              id: "v1",
-              title: "Menempel pada <i>File</i>",
-              description: "Menginfeksi <i>file</i> .exe dan menyebar saat <i>file</i> dibuka."
+                type: "multiple_choice",
+                question: "Seorang <em>hacker</em> mengirimkan <em>email</em> yang tampak berasal dari CEO perusahaan kepada staf keuangan, meminta transfer dana mendesak. <em>Email</em> menggunakan alamat domain mirip dan gaya bahasa yang meyakinkan. Teknik serangan siber apakah ini?",
+                options: [
+                    "<em>Spear phishing</em> dengan rekayasa sosial.",
+                    "<em>Trojan horse</em> berbasis <em>email</em>.",
+                    "<em>Ransomware</em> terselubung.",
+                    "<em>Malvertising</em> melalui lampiran."
+                ],
+                correct: 0,
+                explanation: "<em>Spear phishing</em> adalah serangan <em>phishing</em> yang ditargetkan kepada individu atau organisasi tertentu dengan informasi personal untuk meningkatkan kredibilitas. Berbeda dengan <em>phishing</em> massal, serangan ini lebih berbahaya karena sangat personal dan meyakinkan."
             },
             {
-              id: "v2",
-              title: "Butuh <i>Host</i>",
-              description: "Tidak dapat bekerja sendiri, perlu program lain."
-            }
-          ],
-          // Level 2 - Sedang
-          [
-            {
-              id: "v3",
-              title: "<i>Boot Sector Virus</i>",
-              description: "Menginfeksi bagian <i>boot</i> komputer saat dinyalakan."
+                type: "multiple_choice",
+                question: "Sebuah perusahaan menemukan bahwa data pelanggan mereka dijual di <em>dark web</em>. Investigasi menunjukkan <em>malware</em> telah berjalan selama 6 bulan tanpa terdeteksi, merekam aktivitas dan mencuri data secara bertahap. Jenis ancaman apakah ini?",
+                options: [
+                    "<em>Advanced Persistent Threat</em> (<em>APT</em>) dengan <em>spyware</em>.",
+                    "<em>Worm</em> yang menyebar melalui jaringan.",
+                    "<em>Adware</em> yang mengumpulkan data iklan.",
+                    "<em>Rootkit</em> yang mengubah sistem operasi."
+                ],
+                correct: 0,
+                explanation: "<em>Advanced Persistent Threat</em> (<em>APT</em>) adalah serangan siber canggih yang berlangsung lama dan tersembunyi, biasanya dilakukan oleh kelompok terorganisir. <em>Spyware</em> dalam konteks <em>APT</em> dirancang untuk mencuri data secara diam-diam dalam jangka waktu lama tanpa terdeteksi."
             },
             {
-              id: "v4",
-              title: "Merusak Data",
-              description: "Dapat menghapus atau mengubah <i>file</i> penting."
-            }
-          ],
-          // Level 3 - Sulit
-          [
-            {
-              id: "v5",
-              title: "<i>Polymorphic Virus</i>",
-              description: "Mengubah kode dirinya sendiri untuk mengelabui antivirus."
+                type: "multiple_choice",
+                question: "Seorang pengguna menginstal aplikasi produktivitas gratis dari toko aplikasi pihak ketiga. Aplikasi tersebut berfungsi normal, tetapi secara diam-diam mengenkripsi <em>file</em> penting dan menampilkan pesan tebusan setelah 30 hari. Mengapa serangan ini efektif?",
+                options: [
+                    "Pengguna tidak memverifikasi <em>source code</em> aplikasi.",
+                    "<em>Malware</em> menggunakan teknik <em>delayed payload</em> untuk menghindari deteksi.",
+                    "Aplikasi tidak memerlukan izin administrator.",
+                    "Sistem operasi tidak mendukung enkripsi <em>file</em>."
+                ],
+                correct: 1,
+                explanation: "Teknik <em>delayed payload</em> (muatan tertunda) membuat <em>malware</em> menunda aktivitas berbahayanya untuk menghindari deteksi <em>antivirus</em> dan <em>sandbox testing</em>. Ketika aplikasi sudah dipercaya pengguna, <em>malware</em> baru mengaktifkan fungsi berbahayanya, membuat serangan lebih efektif."
             },
             {
-              id: "v6",
-              title: "Replikasi Terkontrol",
-              description: "Menyalin dirinya ke <i>file</i> lain secara otomatis."
-            }
-          ]
-        ]
-      },
-      worm: {
-        name: "Worm",
-        icon: "🐛",
-        color: "#f59e0b",
-        description: "",
-        levels: [
-          // Level 1
-          [
-            {
-              id: "w1",
-              title: "Mandiri",
-              description: "Dapat bekerja dan menyebar sendiri tanpa <i>file host</i>."
+                type: "multiple_choice",
+                question: "Sebuah organisasi mengalami serangan <em>ransomware</em> yang mengenkripsi semua <em>server</em> mereka. Meskipun mereka memiliki <em>backup</em>, penyerang mengancam akan membocorkan data sensitif yang telah dicuri sebelum enkripsi. Strategi penyerang ini disebut . . . .",
+                options: [
+                    "<em>Single-stage ransomware attack</em>.",
+                    "<em>Double extortion ransomware</em>.",
+                    "<em>Cryptojacking</em> dengan pemerasan.",
+                    "<em>Fileless malware</em> berbasis memori."
+                ],
+                correct: 1,
+                explanation: "<em>Double extortion ransomware</em> adalah teknik modern di mana penyerang tidak hanya mengenkripsi data tetapi juga mencuri data sebelum enkripsi. Korban menghadapi ancaman ganda, yaitu kehilangan akses data DAN kebocoran data publik, membuat mereka lebih tertekan untuk membayar tebusan."
             },
-            {
-              id: "w2",
-              title: "Menyebar via Jaringan",
-              description: "Menggunakan <i>email</i> dan internet untuk menyebar cepat."
-            }
-          ],
-          // Level 2
-          [
-            {
-              id: "w3",
-              title: "Menghabiskan <i>Bandwidth</i>",
-              description: "Memperlambat jaringan karena replikasi massal."
-            },
-            {
-              id: "w4",
-              title: "Eksploitasi Kerentanan",
-              description: "Memanfaatkan celah keamanan sistem operasi."
-            }
-          ],
-          // Level 3
-          [
-            {
-              id: "w5",
-              title: "Serangan DDoS",
-              description: "Membanjiri server target hingga tidak dapat diakses."
-            },
-            {
-              id: "w6",
-              title: "Penyebaran Cepat",
-              description: "Dapat menginfeksi ribuan komputer dalam hitungan jam."
-            }
-          ]
-        ]
-      },
-      trojan: {
-        name: "Trojan",
-        icon: "🐴",
-        color: "#8b5cf6",
-        description: "",
-        levels: [
-          // Level 1
-          [
-            {
-              id: "t1",
-              title: "Menyamar",
-              description: "Terlihat seperti <i>software</i> berguna atau <i>game</i> menarik."
-            },
-            {
-              id: "t2",
-              title: "Pintu Belakang",
-              description: "Membuka akses rahasia bagi peretas ke komputer."
-            }
-          ],
-          // Level 2
-          [
-            {
-              id: "t3",
-              title: "Tidak Menyebar Sendiri",
-              description: "Bergantung pada pengguna untuk menginstalnya."
-            },
-            {
-              id: "t4",
-              title: "Kontrol Jarak Jauh",
-              description: "Memungkinkan hacker mengendalikan komputer korban."
-            }
-          ],
-          // Level 3
-          [
-            {
-              id: "t5",
-              title: "<i>Banking Trojan</i>",
-              description: "Mencuri informasi perbankan dan transaksi online."
-            },
-            {
-              id: "t6",
-              title: "Menonaktifkan Keamanan",
-              description: "Mematikan antivirus dan <i>firewall</i> secara diam-diam."
-            }
-          ]
-        ]
-      },
-      spyware: {
-        name: "Spyware",
-        icon: "🕵️",
-        color: "#ec4899",
-        description: "",
-        levels: [
-          // Level 1
-          [
-            {
-              id: "s1",
-              title: "Memantau Aktivitas",
-              description: "Merekam ketikan <i>keyboard</i> dan riwayat <i>browsing</i>."
-            },
-            {
-              id: "s2",
-              title: "Mencuri Data",
-              description: "Mengambil <i>password</i>, nomor kartu kredit, dan info pribadi."
-            }
-          ],
-          // Level 2
-          [
-            {
-              id: "s3",
-              title: "Tersembunyi",
-              description: "Bekerja diam-diam tanpa diketahui pengguna."
-            },
-            {
-              id: "s4",
-              title: "<i>Keylogger</i>",
-              description: "Merekam semua yang diketik di <i>keyboard</i>."
-            }
-          ],
-          // Level 3
-          [
-            {
-              id: "s5",
-              title: "Tangkapan Layar",
-              description: "Mengambil foto layar tanpa sepengetahuan pengguna."
-            },
-            {
-              id: "s6",
-              title: "Pelacakan Lokasi",
-              description: "Memantau lokasi geografis perangkat korban."
-            }
-          ]
-        ]
-      }
-    };
-
-    let currentScreen = "welcome";
-    let allCards = [];
-    let draggedCard = null;
-    let correctAnswers = 0;
-    let totalCards = 0;
-    let answeredCards = new Set();
-    let currentLevel = 1;
-    let totalLevels = 3;
-
-    function initializeCards() {
-      allCards = [];
-      Object.keys(malwareData).forEach(category => {
-        const levelIndex = currentLevel - 1;
-        malwareData[category].levels[levelIndex].forEach(card => {
-          allCards.push({
-            ...card,
-            correctCategory: category,
-            currentCategory: null
-          });
-        });
-      });
-      totalCards = allCards.length;
-      allCards.sort(() => Math.random() - 0.5);
-    }
-
-    function render() {
-      const app = document.getElementById("app");
-      
-      if (currentScreen === "welcome") {
-        app.innerHTML = renderWelcomeScreen();
-      } else if (currentScreen === "instructions") {
-        app.innerHTML = renderInstructionsScreen();
-      } else if (currentScreen === "game") {
-        app.innerHTML = renderGameScreen();
-      } else if (currentScreen === "levelComplete") {
-        app.innerHTML = renderLevelCompleteScreen();
-      } else if (currentScreen === "results") {
-        app.innerHTML = renderResultsScreen();
-      }
-      
-      attachEventListeners();
-    }
-
-    function renderWelcomeScreen() {
-      return `
-        <div class="w-full h-full flex items-center justify-center p-8" style="background: linear-gradient(135deg, ${config.background_color} 0%, #1e3a8a 100%);">
-          <div class="text-center animate-fadeIn max-w-4xl">
-            <div class="mb-8 animate-pulse-slow">
-              <span style="font-size: ${config.font_size * 4}px;">🛡️</span>
-            </div>
-            <h1 class="mb-6" style="font-size: ${config.font_size * 2.5}px; font-weight: 700; line-height: 1.2;">
-              ${config.app_title}
-            </h1>
-            <p class="mb-8 opacity-90" style="font-size: ${config.font_size * 1.25}px;">
-              ${config.welcome_text}
-            </p>
-            <div class="mb-8 flex justify-center gap-4 flex-wrap">
-              <div class="px-6 py-3 rounded-lg" style="background-color: ${config.surface_color};">
-                <div style="font-size: ${config.font_size * 2}px;">🦠</div>
-                <div style="font-size: ${config.font_size * 0.875}px;">Virus</div>
-              </div>
-              <div class="px-6 py-3 rounded-lg" style="background-color: ${config.surface_color};">
-                <div style="font-size: ${config.font_size * 2}px;">🐛</div>
-                <div style="font-size: ${config.font_size * 0.875}px;">Worm</div>
-              </div>
-              <div class="px-6 py-3 rounded-lg" style="background-color: ${config.surface_color};">
-                <div style="font-size: ${config.font_size * 2}px;">🐴</div>
-                <div style="font-size: ${config.font_size * 0.875}px;">Trojan</div>
-              </div>
-              <div class="px-6 py-3 rounded-lg" style="background-color: ${config.surface_color};">
-                <div style="font-size: ${config.font_size * 2}px;">🕵️</div>
-                <div style="font-size: ${config.font_size * 0.875}px;">Spyware</div>
-              </div>
-            </div>
-            <button id="start-btn" class="px-12 py-4 rounded-full font-bold transition-all duration-300 hover:scale-110" 
-              style="font-size: ${config.font_size * 1.125}px; background-color: ${config.primary_color}; color: white;">
-              Mulai Belajar
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderInstructionsScreen() {
-      return `
-        <div class="w-full h-full flex items-center justify-center p-8" style="background: linear-gradient(135deg, ${config.background_color} 0%, #1e3a8a 100%);">
-          <div class="max-w-4xl animate-fadeIn rounded-3xl p-8" style="background-color: ${config.surface_color};">
-            <div class="text-center mb-8">
-              <h2 class="mb-4" style="font-size: ${config.font_size * 2}px; font-weight: 700;">
-                Cara Bermain
-              </h2>
-              <p style="font-size: ${config.font_size * 1.125}px; opacity: 0.9;">
-                ${config.instruction_text}
-              </p>
-            </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div class="p-6 rounded-xl" style="background-color: ${config.background_color};">
-                <div class="mb-3" style="font-size: ${config.font_size * 2}px;">👆</div>
-                <h3 class="mb-2 font-bold" style="font-size: ${config.font_size * 1.125}px;">
-                  Langkah 1: Seret Kartu
-                </h3>
-                <p style="font-size: ${config.font_size}px; opacity: 0.9;">
-                  Klik dan tahan kartu <i>malware</i>, lalu seret ke kategori yang sesuai.
-                </p>
-              </div>
-              
-              <div class="p-6 rounded-xl" style="background-color: ${config.background_color};">
-                <div class="mb-3" style="font-size: ${config.font_size * 2}px;">🎯</div>
-                <h3 class="mb-2 font-bold" style="font-size: ${config.font_size * 1.125}px;">
-                  Langkah 2: Letakkan di Zona
-                </h3>
-                <p style="font-size: ${config.font_size}px; opacity: 0.9;">
-                  Lepaskan kartu di area kategori <i>malware</i> yang tepat.
-                </p>
-              </div>
-              
-              <div class="p-6 rounded-xl" style="background-color: ${config.background_color};">
-                <div class="mb-3" style="font-size: ${config.font_size * 2}px;">✅</div>
-                <h3 class="mb-2 font-bold" style="font-size: ${config.font_size * 1.125}px;">
-                  Jawaban Benar
-                </h3>
-                <p style="font-size: ${config.font_size}px; opacity: 0.9;">
-                  Kartu akan berubah hijau dan kamu dapat penjelasan.
-                </p>
-              </div>
-              
-              <div class="p-6 rounded-xl" style="background-color: ${config.background_color};">
-                <div class="mb-3" style="font-size: ${config.font_size * 2}px;">❌</div>
-                <h3 class="mb-2 font-bold" style="font-size: ${config.font_size * 1.125}px;">
-                  Jawaban Salah
-                </h3>
-                <p style="font-size: ${config.font_size}px; opacity: 0.9;">
-                  Kartu kembali ke tempat awal, coba lagi!
-                </p>
-              </div>
-            </div>
+            // Benar/Salah
+            {
+                type: "true_false",
+                question: "Sistem <em>zero-day exploit</em> dapat dicegah sepenuhnya dengan menggunakan <em>antivirus</em> yang selalu diperbarui dan <em>firewall</em> yang dikonfigurasi dengan baik.",
+                correct: false,
+                explanation: "Pernyataan ini SALAH. <em>Zero-day exploit</em> memanfaatkan kerentanan yang belum diketahui <em>vendor</em>, sehingga belum ada <em>patch</em> atau <em>signature</em> untuk mendeteksinya. <em>Antivirus</em> dan <em>firewall</em> membantu, tetapi tidak dapat mencegah sepenuhnya karena ancaman ini belum dikenali sistem keamanan."
+            },
+            {
+                type: "true_false",
+                question: "<em>Sandboxing</em> dan analisis perilaku (<em>behavioral analysis</em>) lebih efektif mendeteksi <em>malware</em> baru yang menggunakan teknik <em>polymorphic code</em> dibandingkan dengan deteksi berbasis <em>signature</em> tradisional.",
+                correct: true,
+                explanation: "Pernyataan ini BENAR. <em>Polymorphic malware</em> mengubah kode-nya setiap kali menginfeksi sehingga <em>signature</em>-nya berbeda. <em>Sandboxing</em> menjalankan program di lingkungan terisolasi untuk mengamati perilaku, sementara analisis perilaku mendeteksi pola aktivitas mencurigakan tanpa bergantung pada <em>signature</em> spesifik."
+            },
             
-            <div class="text-center">
-              <button id="play-btn" class="px-12 py-4 rounded-full font-bold transition-all duration-300 hover:scale-110" 
-                style="font-size: ${config.font_size * 1.125}px; background-color: ${config.primary_color}; color: white;">
-                Mulai Kuis
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
+            // MCMA (Multiple Choice Multiple Answers)
+            {
+                type: "mcma",
+                question: "Seorang <em>Chief Information Security Officer</em> (CISO) merancang strategi pertahanan berlapis (<em>defense in depth</em>) terhadap serangan <em>malware</em>. Langkah-langkah mana yang termasuk praktik terbaik dalam strategi ini? (Pilihlah jawaban yang benar)",
+                options: [
+                    "Menerapkan <em>network segmentation</em> untuk membatasi pergerakan lateral <em>malware</em>.",
+                    "Mengimplementasikan <em>endpoint detection and response</em> (EDR) dengan <em>machine learning</em>.",
+                    "Membagikan <em>credentials</em> administrator kepada tim IT untuk efisiensi.",
+                    "Melakukan <em>security awareness training</em> berkala untuk karyawan."
+                ],
+                correct: [0, 1, 3],
+                explanation: "Strategi <em>defense in depth</em> yang efektif meliputi: (1) <em>Network segmentation</em> mencegah <em>malware</em> menyebar ke seluruh jaringan, (2) EDR dengan <em>machine learning</em> mendeteksi ancaman baru berbasis perilaku, (3) <em>Security awareness training</em> mengurangi risiko <em>human error</em>. Membagikan <em>credentials</em> administrator melanggar prinsip <em>least privilege</em> dan meningkatkan risiko."
+            },
+            {
+                type: "mcma",
+                question: "Sebuah tim forensik digital menganalisis serangan <em>malware</em> yang berhasil menembus sistem perusahaan. Temuan mana yang mengindikasikan serangan tingkat lanjut (<em>advanced attack</em>)? (Pilihlah jawaban yang benar)",
+                options: [
+                    "<em>Malware</em> menggunakan teknik <em>living off the land</em> dengan memanfaatkan <em>tools</em> sistem bawaan.",
+                    "<em>Command and control</em> (C2) komunikasi dienkripsi dan menggunakan protokol HTTPS.",
+                    "<em>Malware</em> menampilkan <em>pop-up</em> iklan yang mengganggu.",
+                    "<em>Persistence mechanism</em> ditanamkan di <em>registry</em> dan <em>scheduled tasks</em>."
+                ],
+                correct: [0, 1, 3],
+                explanation: "Indikator serangan tingkat lanjut: (1) Teknik <em>living off the land</em> menggunakan <em>tools</em> legitimate seperti PowerShell untuk menghindari deteksi, (2) C2 terenkripsi via HTTPS menyamarkan komunikasi <em>malware</em> sebagai trafik normal, (3) <em>Persistence mechanism</em> memastikan <em>malware</em> tetap aktif setelah <em>reboot</em>. <em>Pop-up</em> iklan adalah karakteristik <em>adware</em> sederhana, bukan serangan canggih."
+            },
+            
+            // Isi Titik-titik
+            {
+                type: "fill_blank",
+                question: "Dalam serangan <em>supply chain attack</em>, penyerang menyusupkan <em>malware</em> ke dalam <em>software</em> legitimate melalui _______ yang dikompromikan, sehingga ribuan pengguna tanpa sadar menginstal <em>malware</em> dari sumber yang seharusnya terpercaya.",
+                options: [
+                    "sistem <em>backup</em>",
+                    "<em>development pipeline</em> atau <em>update mechanism</em>",
+                    "<em>user interface</em>",
+                    "<em>network router</em>"
+                ],
+                correct: 1,
+                explanation: "<em>Supply chain attack</em> menargetkan <em>development pipeline</em> atau <em>update mechanism</em> <em>software</em> resmi. Contoh terkenal adalah serangan SolarWinds di mana penyerang menyisipkan <em>backdoor</em> dalam <em>update</em> <em>software</em> Orion, menginfeksi ribuan organisasi termasuk pemerintahan dan perusahaan besar."
+            },
+            {
+                type: "fill_blank",
+                question: "Teknik <em>social engineering</em> yang disebut _______ memanfaatkan rasa ingin tahu manusia dengan meninggalkan <em>USB drive</em> berlabel menarik seperti 'Gaji Rahasia 2024' di area publik, berharap seseorang akan mencolokkannya dan mengeksekusi <em>malware</em>.",
+                options: [
+                    "<em>Phishing</em>",
+                    "<em>Baiting</em>",
+                    "<em>Vishing</em>",
+                    "<em>Pretexting</em>"
+                ],
+                correct: 1,
+                explanation: "<em>Baiting</em> adalah teknik <em>social engineering</em> yang menggunakan 'umpan' fisik atau digital untuk menarik korban. <em>USB dropping attack</em> adalah bentuk <em>baiting</em> di mana penyerang sengaja meninggalkan media penyimpanan berisi <em>malware</em> dengan label menarik untuk mengeksploitasi rasa ingin tahu korban."
+            },
+            
+            // Menjodohkan (disesuaikan jadi multiple choice dengan konteks)
+            {
+                type: "matching",
+                question: "Pasangkan teknik serangan <em>malware</em> tingkat lanjut dengan karakteristiknya.",
+                pairs: [
+                    { term: "Fileless Malware", definition: "Beroperasi di memori tanpa menyimpan <em>file</em> di <em>disk</em>." },
+                    { term: "Rootkit", definition: "Menyembunyikan keberadaannya dengan memodifikasi sistem operasi." },
+                    { term: "Logic Bomb", definition: "Tertidur hingga kondisi tertentu terpenuhi baru mengaktifkan <em>payload</em>." },
+                    { term: "Keylogger", definition: "Merekam setiap penekanan tombol untuk mencuri kredensial." }
+                ],
+                currentPairIndex: 0,
+                explanation: "Teknik serangan tingkat lanjut ini dirancang untuk menghindari deteksi dan memaksimalkan dampak. <em>Fileless malware</em> sulit dideteksi karena tidak meninggalkan jejak di <em>disk</em>, <em>rootkit</em> beroperasi di tingkat sistem terdalam, <em>logic bomb</em> menunggu <em>trigger</em> spesifik, dan <em>keylogger</em> mencuri <em>credentials</em> secara diam-diam."
+            },
+            
+            // Pilihan Ganda Kompleks
+            {
+                type: "complex_choice",
+                question: "Analisis pernyataan berikut tentang mitigasi ancaman siber:<br><br>1. <em>Penetration testing</em> berkala membantu mengidentifikasi kerentanan sebelum dieksploitasi penyerang.<br>2. <em>Air-gapped systems</em> (sistem terisolasi) kebal terhadap semua jenis serangan <em>malware</em>.<br>3. Implementasi <em>multi-factor authentication</em> (MFA) secara signifikan mengurangi risiko <em>credential theft</em>.<br>4. <em>Incident response plan</em> harus diuji dan diperbarui secara berkala.<br><br>Pernyataan yang BENAR adalah . . . .",
+                options: [
+                    "1, 2, dan 3.",
+                    "1, 3, dan 4.",
+                    "2, 3, dan 4.",
+                    "Semua benar."
+                ],
+                correct: 1,
+                explanation: "Pernyataan BENAR: (1) <em>Penetration testing</em> proaktif mengidentifikasi kerentanan, (3) MFA menambah lapisan keamanan ekstra, (4) <em>Incident response plan</em> harus terus diperbarui mengikuti evolusi ancaman. Pernyataan (2) SALAH: <em>Air-gapped systems</em> tetap rentan terhadap serangan seperti Stuxnet yang menyebar via <em>USB</em>, atau serangan <em>electromagnetic</em> dan <em>acoustic</em> untuk mencuri data."
+            },
+            {
+                type: "complex_choice",
+                question: "Evaluasi skenario keamanan siber berikut:<br><br>1. Menggunakan <em>VPN</em> saat mengakses <em>Wi-Fi</em> publik.<br>2. Mematikan <em>auto-update</em> sistem operasi untuk stabilitas.<br>3. Menerapkan prinsip <em>least privilege</em> pada <em>user accounts</em>.<br>4. Melakukan <em>regular backup</em> dengan aturan 3-2-1 (<em>3 copies, 2 different media, 1 offsite</em>).<br><br>Praktik keamanan yang DIREKOMENDASIKAN adalah . . . .",
+                options: [
+                    "1 dan 2.",
+                    "1, 2, dan 3.",
+                    "1, 3, dan 4.",
+                    "2, 3, dan 4."
+                ],
+                correct: 2,
+                explanation: "Praktik DIREKOMENDASIKAN: (1) <em>VPN</em> mengenkripsi trafik di jaringan publik yang tidak aman, (3) <em>Least privilege</em> membatasi dampak jika akun dikompromikan, (4) <em>Backup</em> 3-2-1 memastikan pemulihan data dari berbagai skenario bencana. Praktik (2) TIDAK direkomendasikan: Mematikan <em>auto-update</em> membuat sistem rentan terhadap eksploitasi kerentanan yang sudah di<em>patch</em>."
+            },
+            
+            // Tambahan soal
+            {
+                type: "true_false",
+                question: "Teknik <em>obfuscation</em> dan enkripsi <em>payload</em> digunakan oleh penyerang untuk membuat <em>malware</em> lebih sulit dianalisis oleh peneliti keamanan dan sistem deteksi otomatis.",
+                correct: true,
+                explanation: "Pernyataan ini BENAR. <em>Obfuscation</em> mengacak kode untuk menyembunyikan fungsi sebenarnya, sementara enkripsi <em>payload</em> menyembunyikan muatan berbahaya hingga saat eksekusi. Teknik ini mempersulit analisis statis dan <em>reverse engineering</em>, memberi waktu lebih banyak bagi <em>malware</em> untuk menyebar sebelum terdeteksi."
+            },
+            {
+                type: "multiple_choice",
+                question: "Sebuah perusahaan <em>fintech</em> mengalami peningkatan <em>CPU usage</em> yang tidak wajar di beberapa <em>server</em> produksi. Investigasi menunjukkan <em>script</em> tidak sah yang menambang <em>cryptocurrency</em>. Jenis serangan apakah ini?",
+                options: [
+                    "<em>Distributed Denial of Service</em> (DDoS).",
+                    "<em>Cryptojacking</em>.",
+                    "<em>SQL Injection</em>.",
+                    "<em>Cross-Site Scripting</em> (XSS)."
+                ],
+                correct: 1,
+                explanation: "<em>Cryptojacking</em> adalah serangan di mana penyerang menggunakan sumber daya komputasi korban untuk menambang <em>cryptocurrency</em> tanpa izin. Berbeda dengan <em>ransomware</em> yang terang-terangan, <em>cryptojacking</em> beroperasi diam-diam untuk memaksimalkan keuntungan tanpa membuat korban menyadari sistemnya dikompromikan."
+            }
+        ];
 
-    function renderGameScreen() {
-      const availableCards = allCards.filter(card => !answeredCards.has(card.id));
-      const progress = (correctAnswers / totalCards) * 100;
-      
-      return `
-        <div class="w-full h-full p-6" style="background-color: ${config.background_color};">
-          <div class="max-w-7xl mx-auto h-full flex flex-col">
-            <!-- Header dengan Peta Level -->
-            <div class="mb-4">
-              <div class="flex justify-between items-center mb-3">
-                <div>
-                  <h2 class="font-bold" style="font-size: ${config.font_size * 1.25}px;">
-                    Waspada <i>Malware</i> - Level ${currentLevel}
-                  </h2>
-                  <p style="font-size: ${config.font_size * 0.875}px; opacity: 0.8;">
-                    Cocokkan setiap kartu dengan kategori yang tepat.
-                  </p>
-                </div>
-                <div class="text-right">
-                  <div class="font-bold" style="font-size: ${config.font_size * 1.125}px; color: ${config.primary_color};">
-                    ${correctAnswers} / ${totalCards}
-                  </div>
-                  <div style="font-size: ${config.font_size * 0.75}px; opacity: 0.8;">
-                    Jawaban Benar
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Peta Perjalanan Level -->
-              <div class="relative p-4 rounded-xl" style="background: linear-gradient(135deg, ${config.surface_color} 0%, ${config.background_color} 100%);">
-                <div class="flex justify-between items-center relative">
-                  <!-- Garis Penghubung -->
-                  <div class="absolute top-1/2 left-0 right-0 h-1 transform -translate-y-1/2" 
-                    style="background: linear-gradient(to right, ${config.primary_color} 0%, ${config.primary_color} ${(currentLevel - 1) / (totalLevels - 1) * 100}%, rgba(255,255,255,0.2) ${(currentLevel - 1) / (totalLevels - 1) * 100}%, rgba(255,255,255,0.2) 100%);">
-                  </div>
-                  
-                  ${Array.from({length: totalLevels}, (_, i) => {
-                    const level = i + 1;
-                    const isCompleted = level < currentLevel;
-                    const isCurrent = level === currentLevel;
-                    const isLocked = level > currentLevel;
-                    
-                    return `
-                      <div class="relative z-10 flex flex-col items-center ${isCurrent ? 'animate-pulse-slow' : ''}">
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center mb-1 border-3 transition-all duration-300"
-                          style="background-color: ${isCompleted ? config.secondary_color : isCurrent ? config.primary_color : config.surface_color}; 
-                                 border: 3px solid ${isCompleted || isCurrent ? config.primary_color : 'rgba(255,255,255,0.3)'};">
-                          <span style="font-size: ${config.font_size * 1.125}px;">
-                            ${isCompleted ? '✓' : isLocked ? '🔒' : level}
-                          </span>
-                        </div>
-                        <div class="font-bold" style="font-size: ${config.font_size * 0.75}px; opacity: ${isCurrent ? 1 : 0.7};">
-                          Level ${level}
-                        </div>
-                        <div style="font-size: ${config.font_size * 0.625}px; opacity: 0.6;">
-                          ${level === 1 ? 'Mudah' : level === 2 ? 'Sedang' : 'Sulit'}
-                        </div>
-                      </div>
-                    `;
-                  }).join('')}
-                </div>
+        let quizData = [];
+        let matchingProgress = {};
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function initializeQuiz() {
+            quizData = shuffleArray(allQuestions).slice(0, 10);
+            currentQuestion = 0;
+            userAnswers = [];
+            showingFeedback = false;
+            matchingProgress = {};
+        }
+
+        let currentQuestion = 0;
+        let userAnswers = [];
+        let showingFeedback = false;
+        let quizState = 'start';
+
+        // Audio context for sound effects using Web Audio API with oscillators
+        let audioContext;
+        
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        function playSound(type) {
+            if (!audioContext) return;
+            
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
                 
-                <!-- Progress Bar -->
-                <div class="mt-3">
-                  <div class="flex justify-between mb-1">
-                    <span style="font-size: ${config.font_size * 0.75}px; opacity: 0.8;">Progress Level ${currentLevel}</span>
-                    <span style="font-size: ${config.font_size * 0.75}px; font-weight: bold; color: ${config.primary_color};">${Math.round(progress)}%</span>
-                  </div>
-                  <div class="w-full h-2 rounded-full overflow-hidden" style="background-color: ${config.background_color};">
-                    <div class="h-full transition-all duration-500 rounded-full" 
-                      style="width: ${progress}%; background: linear-gradient(to right, ${config.primary_color}, ${config.secondary_color});">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Drop Zones -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-              ${Object.keys(malwareData).map(category => {
-                const data = malwareData[category];
-                const categoryCards = allCards.filter(c => c.currentCategory === category);
-                return `
-                  <div class="drop-zone rounded-xl p-3 transition-all duration-300 min-h-[150px]"
-                    data-category="${category}"
-                    style="background-color: ${config.surface_color}; border: 2px dashed ${data.color};">
-                    <div class="text-center mb-2">
-                      <div style="font-size: ${config.font_size * 1.5}px;">${data.icon}</div>
-                      <h3 class="font-bold" style="font-size: ${config.font_size}px; color: ${data.color};">
-                        ${data.name}
-                      </h3>
-                    </div>
-                    <div class="space-y-2">
-                      ${categoryCards.map(card => `
-                        <div class="p-2 rounded-lg" style="background-color: ${config.secondary_color}; opacity: 0.9;">
-                          <div class="font-bold" style="font-size: ${config.font_size * 0.75}px;">
-                            ✓ ${card.title}
-                          </div>
-                        </div>
-                      `).join('')}
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-            
-            <!-- Available Cards -->
-            <div class="flex-1 overflow-auto pb-4">
-              <h3 class="font-bold mb-3" style="font-size: ${config.font_size}px;">
-                Kartu <i>Malware</i> (${availableCards.length} tersisa)
-              </h3>
-              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pb-4">
-                ${availableCards.map(card => `
-                  <div class="malware-card cursor-move rounded-xl p-3 transition-all duration-300 hover:scale-105"
-                    draggable="true"
-                    data-card-id="${card.id}"
-                    style="background-color: ${config.surface_color}; border: 2px solid ${config.primary_color};">
-                    <h4 class="font-bold mb-2" style="font-size: ${config.font_size * 0.875}px;">
-                      ${card.title}
-                    </h4>
-                    <p style="font-size: ${config.font_size * 0.75}px; opacity: 0.9;">
-                      ${card.description}
-                    </p>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-            
-            <!-- Feedback Area -->
-            <div id="feedback-area" class="rounded-xl p-3 text-center transition-all duration-300" 
-              style="min-height: 60px; background-color: ${config.surface_color}; display: none;">
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderLevelCompleteScreen() {
-      const hasNextLevel = currentLevel < totalLevels;
-      
-      return `
-        <div class="w-full h-full flex items-center justify-center p-8" style="background: linear-gradient(135deg, ${config.background_color} 0%, #1e3a8a 100%);">
-          <div class="max-w-4xl animate-fadeIn rounded-3xl p-8 text-center" style="background-color: ${config.surface_color};">
-            <div class="mb-6 animate-bounce-once">
-              <span style="font-size: ${config.font_size * 5}px;">🎉</span>
-            </div>
-            
-            <h2 class="mb-4 font-bold" style="font-size: ${config.font_size * 2}px;">
-              Level ${currentLevel} Selesai!
-            </h2>
-            
-            <p class="mb-6" style="font-size: ${config.font_size * 1.125}px; opacity: 0.9;">
-              Sempurna! Kamu berhasil menyelesaikan semua tantangan di level ini.
-            </p>
-            
-            <div class="mb-8 p-6 rounded-2xl" style="background-color: ${config.background_color};">
-              <div class="mb-2" style="font-size: ${config.font_size * 3}px; font-weight: 700; color: ${config.secondary_color};">
-                100%
-              </div>
-              <div style="font-size: ${config.font_size * 1.125}px;">
-                ${totalCards} dari ${totalCards} jawaban benar
-              </div>
-            </div>
-            
-            ${hasNextLevel ? `
-              <div class="mb-6 p-6 rounded-2xl" style="background-color: ${config.background_color};">
-                <div class="mb-3" style="font-size: ${config.font_size * 2}px;">🔓</div>
-                <h3 class="font-bold mb-2" style="font-size: ${config.font_size * 1.25}px;">
-                  Level Selanjutnya Terbuka!
-                </h3>
-                <p style="font-size: ${config.font_size}px; opacity: 0.9;">
-                  Bersiaplah untuk tantangan yang lebih sulit dengan kasus <i>malware</i> yang lebih kompleks.
-                </p>
-              </div>
-              
-              <div class="flex gap-4 justify-center">
-                <button id="next-level-btn" class="px-12 py-4 rounded-full font-bold transition-all duration-300 hover:scale-110" 
-                  style="font-size: ${config.font_size * 1.125}px; background-color: ${config.primary_color}; color: white;">
-                  Lanjut ke Level ${currentLevel + 1}
-                </button>
-                <button id="restart-btn" class="px-12 py-4 rounded-full font-bold transition-all duration-300 hover:scale-110" 
-                  style="font-size: ${config.font_size * 1.125}px; background-color: ${config.surface_color}; color: ${config.text_color}; border: 2px solid ${config.primary_color};">
-                  Ulang Level Ini
-                </button>
-              </div>
-            ` : `
-              <button id="view-final-btn" class="px-12 py-4 rounded-full font-bold transition-all duration-300 hover:scale-110" 
-                style="font-size: ${config.font_size * 1.125}px; background-color: ${config.primary_color}; color: white;">
-                Lihat Hasil Akhir
-              </button>
-            `}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderResultsScreen() {
-      return `
-        <div class="w-full h-full flex items-center justify-center p-8" style="background: linear-gradient(135deg, ${config.background_color} 0%, #1e3a8a 100%);">
-          <div class="max-w-4xl animate-fadeIn rounded-3xl p-8 text-center" style="background-color: ${config.surface_color};">
-            <div class="mb-6 animate-bounce-once">
-              <span style="font-size: ${config.font_size * 5}px;">🏆</span>
-            </div>
-            
-            <h2 class="mb-4 font-bold" style="font-size: ${config.font_size * 2}px;">
-              Selamat! Semua Level Selesai!
-            </h2>
-            
-            <p class="mb-6" style="font-size: ${config.font_size * 1.125}px; opacity: 0.9;">
-              Luar biasa! Kamu telah menguasai semua jenis <i>malware</i> dan karakteristiknya.
-            </p>
-            
-            <div class="mb-8 p-6 rounded-2xl" style="background-color: ${config.background_color};">
-              <div class="mb-2" style="font-size: ${config.font_size * 3}px; font-weight: 700; color: ${config.primary_color};">
-                100%
-              </div>
-              <div style="font-size: ${config.font_size * 1.125}px;">
-                Menyelesaikan ${totalLevels} level dengan sempurna
-              </div>
-            </div>
-            
-            <div class="mb-8 text-left space-y-4">
-              <h3 class="font-bold mb-4 text-center" style="font-size: ${config.font_size * 1.25}px;">
-                Poin Penting Keamanan Digital:
-              </h3>
-              
-              <div class="p-4 rounded-xl" style="background-color: ${config.background_color};">
-                <div class="flex items-start gap-3">
-                  <span style="font-size: ${config.font_size * 1.5}px;">🛡️</span>
-                  <div>
-                    <div class="font-bold mb-1" style="font-size: ${config.font_size * 1.125}px;">
-                      Pasang <i>Antivirus</i>
-                    </div>
-                    <p style="font-size: ${config.font_size * 0.875}px; opacity: 0.9;">
-                      Gunakan <i>antivirus</i> terpercaya dan selalu <i>update</i> definisi virus.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="p-4 rounded-xl" style="background-color: ${config.background_color};">
-                <div class="flex items-start gap-3">
-                  <span style="font-size: ${config.font_size * 1.5}px;">⚠️</span>
-                  <div>
-                    <div class="font-bold mb-1" style="font-size: ${config.font_size * 1.125}px;">
-                      Waspada <i>Link</i> & Lampiran
-                    </div>
-                    <p style="font-size: ${config.font_size * 0.875}px; opacity: 0.9;">
-                      Jangan sembarangan klik <i>link</i> atau buka lampiran dari pengirim tidak dikenal.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="p-4 rounded-xl" style="background-color: ${config.background_color};">
-                <div class="flex items-start gap-3">
-                  <span style="font-size: ${config.font_size * 1.5}px;">🔄</span>
-                  <div>
-                    <div class="font-bold mb-1" style="font-size: ${config.font_size * 1.125}px;">
-                      <i>Update</i> Sistem Operasi
-                    </div>
-                    <p style="font-size: ${config.font_size * 0.875}px; opacity: 0.9;">
-                      Selalu perbarui sistem operasi untuk menambal celah keamanan.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="p-4 rounded-xl" style="background-color: ${config.background_color};">
-                <div class="flex items-start gap-3">
-                  <span style="font-size: ${config.font_size * 1.5}px;">💾</span>
-                  <div>
-                    <div class="font-bold mb-1" style="font-size: ${config.font_size * 1.125}px;">
-                      <i>Backup</i> Data Rutin
-                    </div>
-                    <p style="font-size: ${config.font_size * 0.875}px; opacity: 0.9;">
-                      Simpan salinan data penting di tempat terpisah sebagai antisipasi.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="p-4 rounded-xl" style="background-color: ${config.background_color};">
-                <div class="flex items-start gap-3">
-                  <span style="font-size: ${config.font_size * 1.5}px;">🔐</span>
-                  <div>
-                    <div class="font-bold mb-1" style="font-size: ${config.font_size * 1.125}px;">
-                      <i>Password</i> Kuat
-                    </div>
-                    <p style="font-size: ${config.font_size * 0.875}px; opacity: 0.9;">
-                      Gunakan <i>password</i> yang unik dan kompleks untuk setiap akun.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="flex gap-4 justify-center">
-              <button id="restart-all-btn" class="px-12 py-4 rounded-full font-bold transition-all duration-300 hover:scale-110" 
-                style="font-size: ${config.font_size * 1.125}px; background-color: ${config.primary_color}; color: white;">
-                Permainan Baru
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function attachEventListeners() {
-      const startBtn = document.getElementById("start-btn");
-      if (startBtn) {
-        startBtn.addEventListener("click", () => {
-          playSound('click');
-          currentScreen = "instructions";
-          render();
-        });
-      }
-      
-      const playBtn = document.getElementById("play-btn");
-      if (playBtn) {
-        playBtn.addEventListener("click", () => {
-          playSound('click');
-          currentScreen = "game";
-          currentLevel = 1;
-          initializeCards();
-          correctAnswers = 0;
-          answeredCards.clear();
-          render();
-        });
-      }
-      
-      const nextLevelBtn = document.getElementById("next-level-btn");
-      if (nextLevelBtn) {
-        nextLevelBtn.addEventListener("click", () => {
-          playSound('click');
-          currentLevel++;
-          currentScreen = "game";
-          initializeCards();
-          correctAnswers = 0;
-          answeredCards.clear();
-          render();
-        });
-      }
-      
-      const restartBtn = document.getElementById("restart-btn");
-      if (restartBtn) {
-        restartBtn.addEventListener("click", () => {
-          playSound('click');
-          currentScreen = "game";
-          initializeCards();
-          correctAnswers = 0;
-          answeredCards.clear();
-          render();
-        });
-      }
-      
-      const viewFinalBtn = document.getElementById("view-final-btn");
-      if (viewFinalBtn) {
-        viewFinalBtn.addEventListener("click", () => {
-          playSound('click');
-          currentScreen = "results";
-          render();
-        });
-      }
-      
-      const restartAllBtn = document.getElementById("restart-all-btn");
-      if (restartAllBtn) {
-        restartAllBtn.addEventListener("click", () => {
-          playSound('click');
-          currentScreen = "welcome";
-          currentLevel = 1;
-          correctAnswers = 0;
-          answeredCards.clear();
-          render();
-        });
-      }
-      
-      // Drag and Drop
-      const cards = document.querySelectorAll(".malware-card");
-      const dropZones = document.querySelectorAll(".drop-zone");
-      
-      cards.forEach(card => {
-        card.addEventListener("dragstart", handleDragStart);
-        card.addEventListener("dragend", handleDragEnd);
-      });
-      
-      dropZones.forEach(zone => {
-        zone.addEventListener("dragover", handleDragOver);
-        zone.addEventListener("dragenter", handleDragEnter);
-        zone.addEventListener("dragleave", handleDragLeave);
-        zone.addEventListener("drop", handleDrop);
-      });
-    }
-
-    function handleDragStart(e) {
-      const cardId = e.target.dataset.cardId;
-      draggedCard = allCards.find(c => c.id === cardId);
-      e.target.classList.add("dragging");
-      playSound('drag');
-    }
-
-    function handleDragEnd(e) {
-      e.target.classList.remove("dragging");
-    }
-
-    function handleDragOver(e) {
-      e.preventDefault();
-    }
-
-    function handleDragEnter(e) {
-      if (e.target.classList.contains("drop-zone")) {
-        e.target.classList.add("drop-zone-active");
-      }
-    }
-
-    function handleDragLeave(e) {
-      if (e.target.classList.contains("drop-zone")) {
-        e.target.classList.remove("drop-zone-active");
-      }
-    }
-
-    function handleDrop(e) {
-      e.preventDefault();
-      const zone = e.target.closest(".drop-zone");
-      if (!zone || !draggedCard) return;
-      
-      zone.classList.remove("drop-zone-active");
-      const category = zone.dataset.category;
-      
-      checkAnswer(draggedCard, category);
-    }
-
-    function checkAnswer(card, selectedCategory) {
-      const feedbackArea = document.getElementById("feedback-area");
-      const isCorrect = card.correctCategory === selectedCategory;
-      
-      if (isCorrect) {
-        playSound('correct');
-        correctAnswers++;
-        answeredCards.add(card.id);
-        card.currentCategory = selectedCategory;
-        
-        feedbackArea.style.display = "block";
-        feedbackArea.style.backgroundColor = config.secondary_color;
-        feedbackArea.innerHTML = `
-          <div class="animate-bounce-once">
-            <div style="font-size: ${config.font_size * 2}px;">✅</div>
-            <div class="font-bold mt-2" style="font-size: ${config.font_size * 1.125}px;">
-              Benar!
-            </div>
-            <p style="font-size: ${config.font_size}px; opacity: 0.9;">
-              ${card.title} memang termasuk ${malwareData[selectedCategory].name}.
-            </p>
-          </div>
-        `;
-        
-        setTimeout(() => {
-          if (answeredCards.size === totalCards) {
-            playSound('complete');
-            // Level selesai
-            if (currentLevel < totalLevels) {
-              currentScreen = "levelComplete";
-            } else {
-              currentScreen = "results";
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                const now = audioContext.currentTime;
+                
+                if (type === 'correct') {
+                    // Happy ascending sound
+                    oscillator.frequency.setValueAtTime(523.25, now); // C5
+                    oscillator.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    oscillator.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    gainNode.gain.setValueAtTime(0.3, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.3);
+                } else if (type === 'wrong') {
+                    // Sad descending sound
+                    oscillator.frequency.setValueAtTime(392.00, now); // G4
+                    oscillator.frequency.setValueAtTime(329.63, now + 0.15); // E4
+                    oscillator.frequency.setValueAtTime(261.63, now + 0.3); // C4
+                    gainNode.gain.setValueAtTime(0.3, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.4);
+                } else if (type === 'click') {
+                    // Short click sound
+                    oscillator.frequency.setValueAtTime(800, now);
+                    gainNode.gain.setValueAtTime(0.2, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.1);
+                } else if (type === 'finish') {
+                    // Victory fanfare
+                    oscillator.frequency.setValueAtTime(523.25, now); // C5
+                    oscillator.frequency.setValueAtTime(659.25, now + 0.15); // E5
+                    oscillator.frequency.setValueAtTime(783.99, now + 0.3); // G5
+                    oscillator.frequency.setValueAtTime(1046.50, now + 0.45); // C6
+                    gainNode.gain.setValueAtTime(0.3, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.6);
+                }
+            } catch (e) {
+                // Silent fail if audio doesn't work
             }
-            render();
-          } else {
-            render();
-          }
-        }, 1500);
-      } else {
-        playSound('wrong');
-        feedbackArea.style.display = "block";
-        feedbackArea.style.backgroundColor = "#ef4444";
-        feedbackArea.innerHTML = `
-          <div class="animate-shake">
-            <div style="font-size: ${config.font_size * 2}px;">❌</div>
-            <div class="font-bold mt-2" style="font-size: ${config.font_size * 1.125}px;">
-              Coba Lagi!
-            </div>
-            <p style="font-size: ${config.font_size}px; opacity: 0.9;">
-              ${card.title} bukan termasuk ${malwareData[selectedCategory].name}.
-            </p>
-          </div>
-        `;
-        
-        setTimeout(() => {
-          feedbackArea.style.display = "none";
-        }, 2000);
-      }
-    }
+        }
 
-    render();
-  </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b7eac62f116e9d5',t:'MTc2NzQwMzIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+        function renderApp() {
+            const app = document.getElementById('app');
+            const customFont = window.elementSdk?.config?.font_family || defaultConfig.font_family;
+            const baseFontSize = window.elementSdk?.config?.font_size || defaultConfig.font_size;
+            const backgroundColor = window.elementSdk?.config?.background_color || defaultConfig.background_color;
+            const surfaceColor = window.elementSdk?.config?.surface_color || defaultConfig.surface_color;
+            const textColor = window.elementSdk?.config?.text_color || defaultConfig.text_color;
+            const primaryColor = window.elementSdk?.config?.primary_action_color || defaultConfig.primary_action_color;
+            const secondaryColor = window.elementSdk?.config?.secondary_action_color || defaultConfig.secondary_action_color;
+            
+            const quizTitle = window.elementSdk?.config?.quiz_title || defaultConfig.quiz_title;
+            const quizSubtitle = window.elementSdk?.config?.quiz_subtitle || defaultConfig.quiz_subtitle;
+            const startButtonText = window.elementSdk?.config?.start_button_text || defaultConfig.start_button_text;
+            const nextButtonText = window.elementSdk?.config?.next_button_text || defaultConfig.next_button_text;
+            const finishButtonText = window.elementSdk?.config?.finish_button_text || defaultConfig.finish_button_text;
+            const restartButtonText = window.elementSdk?.config?.restart_button_text || defaultConfig.restart_button_text;
+
+            app.style.fontFamily = `${customFont}, system-ui, -apple-system, sans-serif`;
+            app.style.backgroundColor = backgroundColor;
+            app.style.color = textColor;
+
+            if (quizState === 'start') {
+                app.innerHTML = `
+                    <div class="min-h-full flex items-center justify-center p-8">
+                        <div class="text-center max-w-6xl w-full fade-in">
+                            <!-- Maze Concept Map -->
+                            <div style="position: relative; margin-bottom: 48px; padding: 40px; background: linear-gradient(135deg, ${surfaceColor} 0%, #fef3c7 100%); border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+                                <svg viewBox="0 0 800 400" style="width: 100%; max-width: 800px; margin: 0 auto;">
+                                    <!-- Maze paths -->
+                                    <path d="M 50 200 L 150 200 L 150 100 L 250 100 L 250 200" stroke="#d97706" stroke-width="4" fill="none" stroke-dasharray="8,4"/>
+                                    <path d="M 250 200 L 350 200 L 350 300 L 450 300 L 450 200" stroke="#d97706" stroke-width="4" fill="none" stroke-dasharray="8,4"/>
+                                    <path d="M 450 200 L 550 200 L 550 100 L 650 100 L 650 200 L 750 200" stroke="#d97706" stroke-width="4" fill="none" stroke-dasharray="8,4"/>
+                                    
+                                    <!-- Concept nodes with icons -->
+                                    <!-- Start -->
+                                    <circle cx="50" cy="200" r="30" fill="#10b981" stroke="#047857" stroke-width="3"/>
+                                    <text x="50" y="210" text-anchor="middle" fill="white" font-size="24" font-weight="bold">▶</text>
+                                    <text x="50" y="250" text-anchor="middle" fill="${textColor}" font-size="14" font-weight="600">START</text>
+                                    
+                                    <!-- Virus -->
+                                    <circle cx="250" cy="100" r="35" fill="#ef4444" stroke="#dc2626" stroke-width="3"/>
+                                    <text x="250" y="110" text-anchor="middle" fill="white" font-size="28">🦠</text>
+                                    <text x="250" y="160" text-anchor="middle" fill="${textColor}" font-size="13" font-weight="600">Virus</text>
+                                    
+                                    <!-- Trojan -->
+                                    <circle cx="250" cy="200" r="35" fill="#f59e0b" stroke="#d97706" stroke-width="3"/>
+                                    <text x="250" y="210" text-anchor="middle" fill="white" font-size="28">🐴</text>
+                                    <text x="250" y="260" text-anchor="middle" fill="${textColor}" font-size="13" font-weight="600">Trojan</text>
+                                    
+                                    <!-- Worm -->
+                                    <circle cx="450" cy="300" r="35" fill="#8b5cf6" stroke="#7c3aed" stroke-width="3"/>
+                                    <text x="450" y="310" text-anchor="middle" fill="white" font-size="28">🪱</text>
+                                    <text x="450" y="360" text-anchor="middle" fill="${textColor}" font-size="13" font-weight="600">Worm</text>
+                                    
+                                    <!-- Ransomware -->
+                                    <circle cx="450" cy="200" r="35" fill="#ec4899" stroke="#db2777" stroke-width="3"/>
+                                    <text x="450" y="210" text-anchor="middle" fill="white" font-size="28">🔒</text>
+                                    <text x="450" y="160" text-anchor="middle" fill="${textColor}" font-size="13" font-weight="600">Ransomware</text>
+                                    
+                                    <!-- Spyware -->
+                                    <circle cx="650" cy="100" r="35" fill="#06b6d4" stroke="#0891b2" stroke-width="3"/>
+                                    <text x="650" y="110" text-anchor="middle" fill="white" font-size="28">👁️</text>
+                                    <text x="650" y="160" text-anchor="middle" fill="${textColor}" font-size="13" font-weight="600">Spyware</text>
+                                    
+                                    <!-- Finish -->
+                                    <circle cx="750" cy="200" r="30" fill="#10b981" stroke="#047857" stroke-width="3"/>
+                                    <text x="750" y="210" text-anchor="middle" fill="white" font-size="24" font-weight="bold">★</text>
+                                    <text x="750" y="250" text-anchor="middle" fill="${textColor}" font-size="14" font-weight="600">FINISH</text>
+                                    
+                                    <!-- Animated moving dot -->
+                                    <circle cx="50" cy="200" r="8" fill="${primaryColor}">
+                                        <animate attributeName="cx" values="50;150;150;250;250;350;350;450;450;550;550;650;650;750" dur="8s" repeatCount="indefinite"/>
+                                        <animate attributeName="cy" values="200;200;100;100;200;200;300;300;200;200;100;100;200;200" dur="8s" repeatCount="indefinite"/>
+                                    </circle>
+                                </svg>
+                                
+                                <div style="margin-top: 24px; padding: 20px; background-color: rgba(255,255,255,0.7); border-radius: 16px; border-left: 4px solid ${primaryColor};">
+                                    <p style="font-size: ${baseFontSize * 1.1}px; font-weight: 600; color: ${textColor};">
+                                        🎯 Jelajahi labirin ancaman digital dan kuasai konsep keamanan siber!
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div style="background-color: ${surfaceColor}; border-radius: 24px; padding: 48px; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+                                <div style="font-size: ${baseFontSize * 1.2}px; margin-bottom: 16px;">🛡️ 🔒 💻</div>
+                                <h1 style="font-size: ${baseFontSize * 2.5}px; font-weight: 700; margin-bottom: 16px; line-height: 1.2; background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">${quizTitle}</h1>
+                                <p style="font-size: ${baseFontSize * 1.25}px; margin-bottom: 48px; color: ${textColor}; opacity: 0.8;">${quizSubtitle}</p>
+                                <div style="background: linear-gradient(135deg, #fef3c7, #fed7aa); border-radius: 16px; padding: 32px; margin-bottom: 48px; border: 2px solid ${primaryColor};">
+                                    <p style="font-size: ${baseFontSize * 1.1}px; line-height: 1.6; color: ${textColor};">
+                                        Kuis ini menguji pemahamanmu tentang berbagai jenis <em>malware</em> dan ancaman digital yang ada di dunia maya.
+                                        Telusuri setiap tantangan seperti melewati labirin keamanan siber! 🎮
+                                    </p>
+                                </div>
+                                <button id="startBtn" style="background: linear-gradient(135deg, ${primaryColor}, #dc2626); color: white; font-size: ${baseFontSize * 1.3}px; font-weight: 700; padding: 24px 56px; border-radius: 16px; border: none; cursor: pointer; transition: all 0.3s; box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);">
+                                    🚀 ${startButtonText}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Initialize audio on first user interaction
+                const startBtn = document.getElementById('startBtn');
+                startBtn.onmouseover = () => {
+                    startBtn.style.transform = 'scale(1.05) translateY(-2px)';
+                    startBtn.style.boxShadow = '0 12px 32px rgba(245, 158, 11, 0.5)';
+                };
+                startBtn.onmouseout = () => {
+                    startBtn.style.transform = 'scale(1)';
+                    startBtn.style.boxShadow = '0 8px 24px rgba(245, 158, 11, 0.4)';
+                };
+                startBtn.onclick = async () => {
+                    // Initialize audio context on user interaction
+                    initAudio();
+                    playSound('click');
+                    initializeQuiz();
+                    quizState = 'quiz';
+                    renderApp();
+                };
+                
+            } else if (quizState === 'quiz') {
+                const question = quizData[currentQuestion];
+                const progress = ((currentQuestion + 1) / quizData.length) * 100;
+                
+                let questionTypeLabel = '';
+                if (question.type === 'multiple_choice') questionTypeLabel = 'Pilihan Ganda';
+                else if (question.type === 'true_false') questionTypeLabel = 'Benar/Salah';
+                else if (question.type === 'mcma') questionTypeLabel = 'Pilihan Ganda Kompleks (Pilihlah Jawaban yang Benar)';
+                else if (question.type === 'fill_blank') questionTypeLabel = 'Isi Titik-titik';
+                else if (question.type === 'matching') questionTypeLabel = 'Pasangkan dengan cara menarik garis';
+                else if (question.type === 'complex_choice') questionTypeLabel = 'Pilihan Ganda Kompleks';
+                
+                let optionsHTML = '';
+                if (question.type === 'true_false') {
+                    optionsHTML = `
+                        <button class="option-button" data-index="0" style="background: linear-gradient(135deg, #fef3c7, #fde68a); color: ${textColor}; font-size: ${baseFontSize * 1.05}px; padding: 20px 24px; border-radius: 12px; border: 3px solid ${primaryColor}; text-align: left; cursor: pointer; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <span style="font-weight: 700; margin-right: 12px; color: #10b981;">✓</span> BENAR
+                        </button>
+                        <button class="option-button" data-index="1" style="background: linear-gradient(135deg, #fef3c7, #fde68a); color: ${textColor}; font-size: ${baseFontSize * 1.05}px; padding: 20px 24px; border-radius: 12px; border: 3px solid ${primaryColor}; text-align: left; cursor: pointer; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <span style="font-weight: 700; margin-right: 12px; color: #ef4444;">✗</span> SALAH
+                        </button>
+                    `;
+                } else if (question.type === 'mcma') {
+                    optionsHTML = question.options.map((option, idx) => `
+                        <label style="display: flex; align-items: center; background: linear-gradient(135deg, #fef3c7, #fde68a); color: ${textColor}; font-size: ${baseFontSize * 1.05}px; padding: 20px 24px; border-radius: 12px; border: 3px solid ${primaryColor}; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <input type="checkbox" class="mcma-checkbox" data-index="${idx}" style="width: 24px; height: 24px; margin-right: 16px; cursor: pointer; accent-color: ${primaryColor};">
+                            <span style="font-weight: 600;"><span style="font-weight: 700; margin-right: 12px; color: ${primaryColor};">${String.fromCharCode(65 + idx)}.</span>${option}</span>
+                        </label>
+                    `).join('');
+                } else if (question.type === 'matching') {
+                    if (!matchingProgress[currentQuestion]) {
+                        matchingProgress[currentQuestion] = {
+                            selectedPairs: {},
+                            lines: []
+                        };
+                    }
+                    
+                    optionsHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; position: relative;">
+                            <div id="leftColumn" style="display: flex; flex-direction: column; gap: 16px;">
+                                ${question.pairs.map((pair, idx) => `
+                                    <div class="match-term" data-term-index="${idx}" style="background-color: ${backgroundColor}; padding: 20px; border-radius: 12px; border: 3px solid transparent; cursor: pointer; transition: all 0.3s; position: relative;">
+                                        <div style="font-weight: 600; font-size: ${baseFontSize * 1.1}px;"><em>${pair.term}</em></div>
+                                        <div class="connection-dot" data-side="left" data-index="${idx}" style="position: absolute; right: -12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; background-color: ${primaryColor}; border-radius: 50%; cursor: pointer; border: 3px solid ${surfaceColor};"></div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div id="rightColumn" style="display: flex; flex-direction: column; gap: 16px;">
+                                ${shuffleArray(question.pairs.map((p, originalIdx) => ({ def: p.definition, originalIdx }))).map((item, displayIdx) => `
+                                    <div class="match-definition" data-def-index="${item.originalIdx}" style="background-color: ${backgroundColor}; padding: 20px; border-radius: 12px; border: 3px solid transparent; transition: all 0.3s; position: relative;">
+                                        <div style="font-size: ${baseFontSize * 1.05}px;">${item.def}</div>
+                                        <div class="connection-dot" data-side="right" data-index="${item.originalIdx}" style="position: absolute; left: -12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; background-color: ${primaryColor}; border-radius: 50%; cursor: pointer; border: 3px solid ${surfaceColor};"></div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <svg id="lineCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></svg>
+                        </div>
+                        <div style="text-align: right; margin-top: 24px;">
+                            <button id="submitMatchingBtn" style="background-color: ${primaryColor}; color: white; font-size: ${baseFontSize * 1.1}px; font-weight: 600; padding: 16px 32px; border-radius: 10px; border: none; cursor: pointer;">
+                                Kirim Jawaban
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    optionsHTML = question.options.map((option, idx) => `
+                        <button class="option-button" data-index="${idx}" style="background: linear-gradient(135deg, #fef3c7, #fde68a); color: ${textColor}; font-size: ${baseFontSize * 1.05}px; padding: 20px 24px; border-radius: 12px; border: 3px solid ${primaryColor}; text-align: left; cursor: pointer; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <span style="font-weight: 700; margin-right: 12px; color: ${primaryColor};">${String.fromCharCode(65 + idx)}.</span>
+                            ${option}
+                        </button>
+                    `).join('');
+                }
+                
+                app.innerHTML = `
+                    <div class="min-h-full p-8">
+                        <div class="max-w-5xl mx-auto">
+                            <div class="mb-6">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: ${baseFontSize * 0.9}px; color: ${textColor}; font-weight: 600;">Soal ${currentQuestion + 1} dari ${quizData.length}</span>
+                                    <span style="font-size: ${baseFontSize * 0.9}px; color: ${textColor}; font-weight: 600;">${Math.round(progress)}%</span>
+                                </div>
+                                <div style="background-color: #fbbf24; height: 10px; border-radius: 8px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                                    <div style="background: linear-gradient(90deg, ${primaryColor}, #dc2626); height: 100%; width: ${progress}%; transition: width 0.5s; box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="fade-in" style="background-color: ${surfaceColor}; border-radius: 20px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 3px solid ${primaryColor};">
+                                <div style="display: inline-block; background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}); color: white; padding: 10px 20px; border-radius: 12px; font-size: ${baseFontSize * 0.9}px; font-weight: 700; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
+                                    ${questionTypeLabel}
+                                </div>
+                                
+                                <div style="font-size: ${baseFontSize * 1.5}px; font-weight: 600; margin-bottom: 32px; line-height: 1.5; color: ${textColor};">
+                                    ${question.question}
+                                </div>
+                                
+                                <div id="optionsContainer" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+                                    ${optionsHTML}
+                                </div>
+                                
+                                ${question.type === 'mcma' ? `
+                                    <div style="text-align: right; margin-bottom: 24px;">
+                                        <button id="submitMcmaBtn" style="background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}); color: white; font-size: ${baseFontSize * 1.1}px; font-weight: 700; padding: 16px 32px; border-radius: 12px; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
+                                            Kirim Jawaban
+                                        </button>
+                                    </div>
+                                ` : ''}
+                                
+                                <div id="feedback" style="display: none; padding: 24px; border-radius: 12px; margin-bottom: 24px; font-size: ${baseFontSize * 1.05}px; line-height: 1.6;"></div>
+                                
+                                <div id="nextButtonContainer" style="display: none; text-align: right;">
+                                    <button id="nextBtn" style="background: linear-gradient(135deg, ${primaryColor}, #dc2626); color: white; font-size: ${baseFontSize * 1.2}px; font-weight: 700; padding: 18px 40px; border-radius: 12px; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
+                                        ${currentQuestion === quizData.length - 1 ? 'Lihat Hasil' : nextButtonText}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                if (question.type === 'mcma') {
+                    const submitBtn = document.getElementById('submitMcmaBtn');
+                    submitBtn.onclick = () => {
+                        const checkedBoxes = document.querySelectorAll('.mcma-checkbox:checked');
+                        const selectedIndices = Array.from(checkedBoxes).map(cb => parseInt(cb.dataset.index));
+                        handleAnswer(selectedIndices);
+                    };
+                } else if (question.type === 'matching') {
+                    let selectedDot = null;
+                    let isDrawing = false;
+                    let tempLine = null;
+                    
+                    const svg = document.getElementById('lineCanvas');
+                    const progress = matchingProgress[currentQuestion];
+                    
+                    function drawLine(x1, y1, x2, y2, color, id) {
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', x1);
+                        line.setAttribute('y1', y1);
+                        line.setAttribute('x2', x2);
+                        line.setAttribute('y2', y2);
+                        line.setAttribute('stroke', color);
+                        line.setAttribute('stroke-width', '3');
+                        if (id) line.setAttribute('data-line-id', id);
+                        svg.appendChild(line);
+                        return line;
+                    }
+                    
+                    function redrawLines() {
+                        svg.innerHTML = '';
+                        Object.keys(progress.selectedPairs).forEach(leftIdx => {
+                            const rightIdx = progress.selectedPairs[leftIdx];
+                            const leftDot = document.querySelector(`.connection-dot[data-side="left"][data-index="${leftIdx}"]`);
+                            const rightDot = document.querySelector(`.connection-dot[data-side="right"][data-index="${rightIdx}"]`);
+                            if (leftDot && rightDot) {
+                                const leftRect = leftDot.getBoundingClientRect();
+                                const rightRect = rightDot.getBoundingClientRect();
+                                const svgRect = svg.getBoundingClientRect();
+                                drawLine(
+                                    leftRect.left + leftRect.width / 2 - svgRect.left,
+                                    leftRect.top + leftRect.height / 2 - svgRect.top,
+                                    rightRect.left + rightRect.width / 2 - svgRect.left,
+                                    rightRect.top + rightRect.height / 2 - svgRect.top,
+                                    primaryColor,
+                                    `${leftIdx}-${rightIdx}`
+                                );
+                            }
+                        });
+                    }
+                    
+                    document.querySelectorAll('.connection-dot').forEach(dot => {
+                        dot.addEventListener('mousedown', (e) => {
+                            e.preventDefault();
+                            selectedDot = dot;
+                            isDrawing = true;
+                            
+                            const rect = dot.getBoundingClientRect();
+                            const svgRect = svg.getBoundingClientRect();
+                            const startX = rect.left + rect.width / 2 - svgRect.left;
+                            const startY = rect.top + rect.height / 2 - svgRect.top;
+                            
+                            tempLine = drawLine(startX, startY, startX, startY, secondaryColor);
+                        });
+                    });
+                    
+                    document.addEventListener('mousemove', (e) => {
+                        if (isDrawing && tempLine) {
+                            const svgRect = svg.getBoundingClientRect();
+                            tempLine.setAttribute('x2', e.clientX - svgRect.left);
+                            tempLine.setAttribute('y2', e.clientY - svgRect.top);
+                        }
+                    });
+                    
+                    document.addEventListener('mouseup', (e) => {
+                        if (isDrawing && selectedDot) {
+                            const targetDot = e.target.closest('.connection-dot');
+                            
+                            if (targetDot && targetDot !== selectedDot) {
+                                const side1 = selectedDot.dataset.side;
+                                const side2 = targetDot.dataset.side;
+                                
+                                if (side1 !== side2) {
+                                    const leftIdx = side1 === 'left' ? selectedDot.dataset.index : targetDot.dataset.index;
+                                    const rightIdx = side1 === 'right' ? selectedDot.dataset.index : targetDot.dataset.index;
+                                    
+                                    // Remove existing connection for this left item
+                                    if (progress.selectedPairs[leftIdx]) {
+                                        delete progress.selectedPairs[leftIdx];
+                                    }
+                                    
+                                    progress.selectedPairs[leftIdx] = rightIdx;
+                                    redrawLines();
+                                }
+                            }
+                            
+                            if (tempLine) {
+                                tempLine.remove();
+                                tempLine = null;
+                            }
+                        }
+                        
+                        isDrawing = false;
+                        selectedDot = null;
+                    });
+                    
+                    const submitBtn = document.getElementById('submitMatchingBtn');
+                    submitBtn.onclick = () => {
+                        handleMatchingSubmit();
+                    };
+                } else {
+                    const optionButtons = document.querySelectorAll('.option-button');
+                    optionButtons.forEach(btn => {
+                        btn.onclick = () => handleAnswer(parseInt(btn.dataset.index));
+                    });
+                }
+                
+            } else if (quizState === 'result') {
+                const correctCount = userAnswers.filter(a => a.correct).length;
+                const incorrectCount = quizData.length - correctCount;
+                const score = Math.round((correctCount / quizData.length) * 100);
+                
+                let performanceMessage = '';
+                let performanceEmoji = '';
+                if (score >= 90) {
+                    performanceMessage = 'Luar Biasa! Pemahamanmu sangat baik!';
+                    performanceEmoji = '🏆';
+                } else if (score >= 70) {
+                    performanceMessage = 'Bagus! Kamu memahami sebagian besar materi.';
+                    performanceEmoji = '⭐';
+                } else if (score >= 50) {
+                    performanceMessage = 'Cukup baik, terus belajar untuk meningkatkan pemahaman.';
+                    performanceEmoji = '📚';
+                } else {
+                    performanceMessage = 'Perlu belajar lebih banyak. Jangan menyerah!';
+                    performanceEmoji = '💪';
+                }
+                
+                const incorrectTopics = userAnswers
+                    .filter(a => !a.correct)
+                    .map(a => quizData[a.questionIndex].question.substring(0, 80).replace(/<\/?em>/g, '') + '...');
+                
+                app.innerHTML = `
+                    <div class="min-h-full flex items-center justify-center p-8">
+                        <div class="max-w-4xl w-full fade-in">
+                            <div class="text-center mb-8">
+                                <div style="font-size: ${baseFontSize * 4}px; margin-bottom: 16px; filter: drop-shadow(0 4px 8px rgba(245,158,11,0.3));">${performanceEmoji}</div>
+                                <h2 style="font-size: ${baseFontSize * 2.5}px; font-weight: 700; margin-bottom: 8px; background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Hasil</h2>
+                                <p style="font-size: ${baseFontSize * 1.3}px; color: ${textColor};">${performanceMessage}</p>
+                            </div>
+                            
+                            <div style="background-color: ${surfaceColor}; border-radius: 24px; padding: 48px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); margin-bottom: 32px; border: 3px solid ${primaryColor};">
+                                <div style="text-align: center; margin-bottom: 40px;">
+                                    <div style="font-size: ${baseFontSize * 4.5}px; font-weight: 800; background: linear-gradient(135deg, ${primaryColor}, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; filter: drop-shadow(0 2px 4px rgba(245,158,11,0.2));">${score}</div>
+                                    <div style="font-size: ${baseFontSize * 1.2}px; color: ${textColor}; font-weight: 600;">Skor Anda</div>
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+                                    <div style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 28px; border-radius: 16px; text-align: center; border: 3px solid #10b981; box-shadow: 0 4px 12px rgba(16,185,129,0.2);">
+                                        <div style="font-size: ${baseFontSize * 3}px; color: #047857; font-weight: 800; margin-bottom: 8px;">✓ ${correctCount}</div>
+                                        <div style="font-size: ${baseFontSize * 1.1}px; color: #065f46; font-weight: 600;">Jawaban Benar</div>
+                                    </div>
+                                    <div style="background: linear-gradient(135deg, #fecaca, #fca5a5); padding: 28px; border-radius: 16px; text-align: center; border: 3px solid #ef4444; box-shadow: 0 4px 12px rgba(239,68,68,0.2);">
+                                        <div style="font-size: ${baseFontSize * 3}px; color: #b91c1c; font-weight: 800; margin-bottom: 8px;">✗ ${incorrectCount}</div>
+                                        <div style="font-size: ${baseFontSize * 1.1}px; color: #991b1b; font-weight: 600;">Jawaban Salah</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: center; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                                <button id="restartBtn" style="background: linear-gradient(135deg, ${secondaryColor}, #7c3aed); color: white; font-size: ${baseFontSize * 1.1}px; font-weight: 700; padding: 18px 40px; border-radius: 14px; border: none; cursor: pointer; box-shadow: 0 6px 16px rgba(139,92,246,0.3);">
+                                    🏠 Ke Halaman Awal
+                                </button>
+                                <button id="newGameBtn" style="background: linear-gradient(135deg, ${primaryColor}, #dc2626); color: white; font-size: ${baseFontSize * 1.2}px; font-weight: 700; padding: 20px 48px; border-radius: 14px; border: none; cursor: pointer; box-shadow: 0 6px 16px rgba(245,158,11,0.4);">
+                                    🎲 Mulai Permainan Baru
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Play finish sound
+                setTimeout(() => {
+                    playSound('finish');
+                }, 300);
+                
+                const restartBtn = document.getElementById('restartBtn');
+                restartBtn.onmouseover = () => restartBtn.style.transform = 'scale(1.05)';
+                restartBtn.onmouseout = () => restartBtn.style.transform = 'scale(1)';
+                restartBtn.onclick = () => {
+                    quizState = 'start';
+                    renderApp();
+                };
+                
+                const newGameBtn = document.getElementById('newGameBtn');
+                newGameBtn.onmouseover = () => newGameBtn.style.transform = 'scale(1.05)';
+                newGameBtn.onmouseout = () => newGameBtn.style.transform = 'scale(1)';
+                newGameBtn.onclick = () => {
+                    initializeQuiz();
+                    quizState = 'quiz';
+                    renderApp();
+                };
+            }
+        }
+
+        function handleMatchingSubmit() {
+            if (showingFeedback) return;
+            
+            const question = quizData[currentQuestion];
+            const progress = matchingProgress[currentQuestion];
+            
+            // Check if all pairs are matched
+            if (Object.keys(progress.selectedPairs).length !== question.pairs.length) {
+                const feedback = document.getElementById('feedback');
+                feedback.style.display = 'block';
+                feedback.style.backgroundColor = '#fecaca';
+                feedback.style.color = '#991b1b';
+                feedback.innerHTML = `
+                    <div style="font-weight: 600;">⚠️ Belum Selesai</div>
+                    <div>Harap cocokkan semua istilah dengan karakteristiknya!</div>
+                `;
+                playSound('wrong');
+                setTimeout(() => {
+                    feedback.style.display = 'none';
+                }, 2000);
+                return;
+            }
+            
+            // Check correctness
+            let correctCount = 0;
+            const results = [];
+            question.pairs.forEach((pair, idx) => {
+                const selectedIdx = progress.selectedPairs[idx];
+                const isCorrect = selectedIdx == idx; // Compare indices
+                if (isCorrect) correctCount++;
+                results.push({
+                    term: pair.term,
+                    correct: isCorrect,
+                    selectedDef: question.pairs[selectedIdx].definition,
+                    correctDef: pair.definition
+                });
+            });
+            
+            const allCorrect = correctCount === question.pairs.length;
+            showingFeedback = true;
+            
+            // Play sound effect
+            playSound(allCorrect ? 'correct' : 'wrong');
+            
+            userAnswers.push({
+                questionIndex: currentQuestion,
+                selectedIndex: null,
+                correct: allCorrect,
+                matchingDetails: results
+            });
+            
+            const baseFontSize = window.elementSdk?.config?.font_size || defaultConfig.font_size;
+            const primaryColor = window.elementSdk?.config?.primary_action_color || defaultConfig.primary_action_color;
+            
+            // Show feedback with colors on the items
+            results.forEach((result, idx) => {
+                const termDiv = document.querySelector(`.match-term[data-term-index="${idx}"]`);
+                const defDiv = document.querySelector(`.match-definition[data-def-index="${progress.selectedPairs[idx]}"]`);
+                
+                if (result.correct) {
+                    termDiv.style.borderColor = '#22c55e';
+                    termDiv.style.backgroundColor = '#d1fae5';
+                    termDiv.style.color = '#065f46';
+                    defDiv.style.borderColor = '#22c55e';
+                    defDiv.style.backgroundColor = '#d1fae5';
+                    defDiv.style.color = '#065f46';
+                } else {
+                    termDiv.style.borderColor = '#ef4444';
+                    termDiv.style.backgroundColor = '#fecaca';
+                    termDiv.style.color = '#991b1b';
+                    defDiv.style.borderColor = '#ef4444';
+                    defDiv.style.backgroundColor = '#fecaca';
+                    defDiv.style.color = '#991b1b';
+                }
+            });
+            
+            const feedback = document.getElementById('feedback');
+            feedback.style.display = 'block';
+            feedback.style.backgroundColor = allCorrect ? '#d1fae5' : '#fecaca';
+            feedback.style.color = allCorrect ? '#065f46' : '#991b1b';
+            feedback.style.border = `3px solid ${allCorrect ? '#10b981' : '#ef4444'}`;
+            feedback.className = 'pulse-animation';
+            
+            let detailsHTML = results.filter(r => !r.correct).map(r => `
+                <div style="margin-bottom: 8px;">
+                    <em>${r.term}</em>: ${r.correctDef}
+                </div>
+            `).join('');
+            
+            feedback.innerHTML = `
+                <div style="font-weight: 600; font-size: ${baseFontSize * 1.2}px; margin-bottom: 12px;">
+                    ${allCorrect ? '✓ Sempurna! Semua Benar!' : `✓ Benar ${correctCount} dari ${question.pairs.length}`}
+                </div>
+                ${detailsHTML ? '<div style="margin-bottom: 12px;">Jawaban yang benar:</div>' + detailsHTML : ''}
+                <div style="margin-top: 12px;">${question.explanation}</div>
+            `;
+            
+            document.getElementById('submitMatchingBtn').disabled = true;
+            document.getElementById('submitMatchingBtn').style.opacity = '0.5';
+            
+            const nextButtonContainer = document.getElementById('nextButtonContainer');
+            nextButtonContainer.style.display = 'block';
+            
+            setupNextButton();
+        }
+
+        function handleAnswer(selectedIndex) {
+            if (showingFeedback) return;
+            
+            const question = quizData[currentQuestion];
+            let isCorrect = false;
+            
+            if (question.type === 'true_false') {
+                isCorrect = (selectedIndex === 0 && question.correct === true) || (selectedIndex === 1 && question.correct === false);
+            } else if (question.type === 'mcma') {
+                const correctSet = new Set(question.correct);
+                const selectedSet = new Set(selectedIndex);
+                isCorrect = correctSet.size === selectedSet.size && [...correctSet].every(i => selectedSet.has(i));
+            } else {
+                isCorrect = selectedIndex === question.correct;
+            }
+            
+            showingFeedback = true;
+            
+            // Play sound effect
+            playSound(isCorrect ? 'correct' : 'wrong');
+            
+            userAnswers.push({
+                questionIndex: currentQuestion,
+                selectedIndex: selectedIndex,
+                correct: isCorrect
+            });
+            
+            const backgroundColor = window.elementSdk?.config?.background_color || defaultConfig.background_color;
+            const baseFontSize = window.elementSdk?.config?.font_size || defaultConfig.font_size;
+            
+            if (question.type === 'mcma') {
+                const labels = document.querySelectorAll('#optionsContainer label');
+                labels.forEach((label, idx) => {
+                    const checkbox = label.querySelector('input');
+                    checkbox.disabled = true;
+                    
+                    if (question.correct.includes(idx)) {
+                        label.style.borderColor = '#22c55e';
+                        label.style.backgroundColor = '#d1fae5';
+                        label.style.color = '#065f46';
+                    } else if (selectedIndex.includes(idx)) {
+                        label.style.borderColor = '#ef4444';
+                        label.style.backgroundColor = '#fecaca';
+                        label.style.color = '#991b1b';
+                    }
+                });
+                
+                document.getElementById('submitMcmaBtn').disabled = true;
+                document.getElementById('submitMcmaBtn').style.opacity = '0.5';
+            } else {
+                const optionButtons = document.querySelectorAll('.option-button');
+                optionButtons.forEach((btn, idx) => {
+                    btn.disabled = true;
+                    if (question.type === 'true_false') {
+                        const correctIdx = question.correct === true ? 0 : 1;
+                        if (idx === correctIdx) {
+                            btn.style.borderColor = '#22c55e';
+                            btn.style.backgroundColor = '#d1fae5';
+                            btn.style.color = '#065f46';
+                        } else if (idx === selectedIndex && !isCorrect) {
+                            btn.style.borderColor = '#ef4444';
+                            btn.style.backgroundColor = '#fecaca';
+                            btn.style.color = '#991b1b';
+                        }
+                    } else {
+                        if (idx === question.correct) {
+                            btn.style.borderColor = '#22c55e';
+                            btn.style.backgroundColor = '#d1fae5';
+                            btn.style.color = '#065f46';
+                        } else if (idx === selectedIndex && !isCorrect) {
+                            btn.style.borderColor = '#ef4444';
+                            btn.style.backgroundColor = '#fecaca';
+                            btn.style.color = '#991b1b';
+                        }
+                    }
+                });
+            }
+            
+            const feedback = document.getElementById('feedback');
+            feedback.style.display = 'block';
+            feedback.style.backgroundColor = isCorrect ? '#d1fae5' : '#fecaca';
+            feedback.style.color = isCorrect ? '#065f46' : '#991b1b';
+            feedback.style.border = `3px solid ${isCorrect ? '#10b981' : '#ef4444'}`;
+            feedback.className = 'pulse-animation';
+            feedback.innerHTML = `
+                <div style="font-weight: 600; font-size: ${baseFontSize * 1.2}px; margin-bottom: 12px;">
+                    ${isCorrect ? '✓ Benar!' : '✗ Kurang Tepat'}
+                </div>
+                <div>${question.explanation}</div>
+            `;
+            
+            const nextButtonContainer = document.getElementById('nextButtonContainer');
+            nextButtonContainer.style.display = 'block';
+            
+            setupNextButton();
+        }
+
+        function setupNextButton() {
+            const primaryColor = window.elementSdk?.config?.primary_action_color || defaultConfig.primary_action_color;
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.onmouseover = () => nextBtn.style.transform = 'scale(1.05)';
+            nextBtn.onmouseout = () => nextBtn.style.transform = 'scale(1)';
+            nextBtn.onclick = () => {
+                playSound('click');
+                if (currentQuestion < quizData.length - 1) {
+                    currentQuestion++;
+                    showingFeedback = false;
+                    renderApp();
+                } else {
+                    quizState = 'result';
+                    renderApp();
+                }
+            };
+        }
+
+        async function onConfigChange(config) {
+            renderApp();
+        }
+
+        function mapToCapabilities(config) {
+            return {
+                recolorables: [
+                    {
+                        get: () => config.background_color || defaultConfig.background_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ background_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.surface_color || defaultConfig.surface_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ surface_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.text_color || defaultConfig.text_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ text_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ primary_action_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ secondary_action_color: value });
+                            }
+                        }
+                    }
+                ],
+                borderables: [],
+                fontEditable: {
+                    get: () => config.font_family || defaultConfig.font_family,
+                    set: (value) => {
+                        if (window.elementSdk) {
+                            window.elementSdk.setConfig({ font_family: value });
+                        }
+                    }
+                },
+                fontSizeable: {
+                    get: () => config.font_size || defaultConfig.font_size,
+                    set: (value) => {
+                        if (window.elementSdk) {
+                            window.elementSdk.setConfig({ font_size: value });
+                        }
+                    }
+                }
+            };
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ["quiz_title", config.quiz_title || defaultConfig.quiz_title],
+                ["quiz_subtitle", config.quiz_subtitle || defaultConfig.quiz_subtitle],
+                ["start_button_text", config.start_button_text || defaultConfig.start_button_text],
+                ["next_button_text", config.next_button_text || defaultConfig.next_button_text],
+                ["finish_button_text", config.finish_button_text || defaultConfig.finish_button_text],
+                ["restart_button_text", config.restart_button_text || defaultConfig.restart_button_text]
+            ]);
+        }
+
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig,
+                onConfigChange,
+                mapToCapabilities,
+                mapToEditPanelValues
+            });
+        }
+
+        renderApp();
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b7fb2df453be9d5',t:'MTc2NzQxMzk3NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
