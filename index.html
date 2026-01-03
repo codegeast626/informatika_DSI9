@@ -505,28 +505,28 @@
         <div class="w-full h-full p-6" style="background-color: ${config.background_color};">
           <div class="max-w-7xl mx-auto h-full flex flex-col">
             <!-- Header dengan Peta Level -->
-            <div class="mb-6">
-              <div class="flex justify-between items-center mb-4">
+            <div class="mb-4">
+              <div class="flex justify-between items-center mb-3">
                 <div>
-                  <h2 class="font-bold" style="font-size: ${config.font_size * 1.5}px;">
+                  <h2 class="font-bold" style="font-size: ${config.font_size * 1.25}px;">
                     Waspada <i>Malware</i> - Level ${currentLevel}
                   </h2>
-                  <p style="font-size: ${config.font_size}px; opacity: 0.8;">
+                  <p style="font-size: ${config.font_size * 0.875}px; opacity: 0.8;">
                     Cocokkan setiap kartu dengan kategori yang tepat.
                   </p>
                 </div>
                 <div class="text-right">
-                  <div class="font-bold" style="font-size: ${config.font_size * 1.25}px; color: ${config.primary_color};">
+                  <div class="font-bold" style="font-size: ${config.font_size * 1.125}px; color: ${config.primary_color};">
                     ${correctAnswers} / ${totalCards}
                   </div>
-                  <div style="font-size: ${config.font_size * 0.875}px; opacity: 0.8;">
+                  <div style="font-size: ${config.font_size * 0.75}px; opacity: 0.8;">
                     Jawaban Benar
                   </div>
                 </div>
               </div>
               
               <!-- Peta Perjalanan Level -->
-              <div class="relative p-6 rounded-2xl" style="background: linear-gradient(135deg, ${config.surface_color} 0%, ${config.background_color} 100%);">
+              <div class="relative p-4 rounded-xl" style="background: linear-gradient(135deg, ${config.surface_color} 0%, ${config.background_color} 100%);">
                 <div class="flex justify-between items-center relative">
                   <!-- Garis Penghubung -->
                   <div class="absolute top-1/2 left-0 right-0 h-1 transform -translate-y-1/2" 
@@ -541,17 +541,17 @@
                     
                     return `
                       <div class="relative z-10 flex flex-col items-center ${isCurrent ? 'animate-pulse-slow' : ''}">
-                        <div class="w-16 h-16 rounded-full flex items-center justify-center mb-2 border-4 transition-all duration-300"
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center mb-1 border-3 transition-all duration-300"
                           style="background-color: ${isCompleted ? config.secondary_color : isCurrent ? config.primary_color : config.surface_color}; 
-                                 border-color: ${isCompleted || isCurrent ? config.primary_color : 'rgba(255,255,255,0.3)'};">
-                          <span style="font-size: ${config.font_size * 1.5}px;">
+                                 border: 3px solid ${isCompleted || isCurrent ? config.primary_color : 'rgba(255,255,255,0.3)'};">
+                          <span style="font-size: ${config.font_size * 1.125}px;">
                             ${isCompleted ? '✓' : isLocked ? '🔒' : level}
                           </span>
                         </div>
-                        <div class="font-bold" style="font-size: ${config.font_size * 0.875}px; opacity: ${isCurrent ? 1 : 0.7};">
+                        <div class="font-bold" style="font-size: ${config.font_size * 0.75}px; opacity: ${isCurrent ? 1 : 0.7};">
                           Level ${level}
                         </div>
-                        <div style="font-size: ${config.font_size * 0.75}px; opacity: 0.6;">
+                        <div style="font-size: ${config.font_size * 0.625}px; opacity: 0.6;">
                           ${level === 1 ? 'Mudah' : level === 2 ? 'Sedang' : 'Sulit'}
                         </div>
                       </div>
@@ -560,12 +560,12 @@
                 </div>
                 
                 <!-- Progress Bar -->
-                <div class="mt-4">
-                  <div class="flex justify-between mb-2">
-                    <span style="font-size: ${config.font_size * 0.875}px; opacity: 0.8;">Progress Level ${currentLevel}</span>
-                    <span style="font-size: ${config.font_size * 0.875}px; font-weight: bold; color: ${config.primary_color};">${Math.round(progress)}%</span>
+                <div class="mt-3">
+                  <div class="flex justify-between mb-1">
+                    <span style="font-size: ${config.font_size * 0.75}px; opacity: 0.8;">Progress Level ${currentLevel}</span>
+                    <span style="font-size: ${config.font_size * 0.75}px; font-weight: bold; color: ${config.primary_color};">${Math.round(progress)}%</span>
                   </div>
-                  <div class="w-full h-3 rounded-full overflow-hidden" style="background-color: ${config.background_color};">
+                  <div class="w-full h-2 rounded-full overflow-hidden" style="background-color: ${config.background_color};">
                     <div class="h-full transition-all duration-500 rounded-full" 
                       style="width: ${progress}%; background: linear-gradient(to right, ${config.primary_color}, ${config.secondary_color});">
                     </div>
@@ -575,24 +575,24 @@
             </div>
             
             <!-- Drop Zones -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
               ${Object.keys(malwareData).map(category => {
                 const data = malwareData[category];
                 const categoryCards = allCards.filter(c => c.currentCategory === category);
                 return `
-                  <div class="drop-zone rounded-2xl p-4 transition-all duration-300 min-h-[200px]"
+                  <div class="drop-zone rounded-xl p-3 transition-all duration-300 min-h-[150px]"
                     data-category="${category}"
-                    style="background-color: ${config.surface_color}; border: 3px dashed ${data.color};">
-                    <div class="text-center mb-3">
-                      <div style="font-size: ${config.font_size * 2}px;">${data.icon}</div>
-                      <h3 class="font-bold" style="font-size: ${config.font_size * 1.125}px; color: ${data.color};">
+                    style="background-color: ${config.surface_color}; border: 2px dashed ${data.color};">
+                    <div class="text-center mb-2">
+                      <div style="font-size: ${config.font_size * 1.5}px;">${data.icon}</div>
+                      <h3 class="font-bold" style="font-size: ${config.font_size}px; color: ${data.color};">
                         ${data.name}
                       </h3>
                     </div>
                     <div class="space-y-2">
                       ${categoryCards.map(card => `
-                        <div class="p-3 rounded-lg" style="background-color: ${config.secondary_color}; opacity: 0.9;">
-                          <div class="font-bold" style="font-size: ${config.font_size * 0.875}px;">
+                        <div class="p-2 rounded-lg" style="background-color: ${config.secondary_color}; opacity: 0.9;">
+                          <div class="font-bold" style="font-size: ${config.font_size * 0.75}px;">
                             ✓ ${card.title}
                           </div>
                         </div>
@@ -604,20 +604,20 @@
             </div>
             
             <!-- Available Cards -->
-            <div class="flex-1 overflow-auto">
-              <h3 class="font-bold mb-3" style="font-size: ${config.font_size * 1.125}px;">
+            <div class="flex-1 overflow-auto pb-4">
+              <h3 class="font-bold mb-3" style="font-size: ${config.font_size}px;">
                 Kartu <i>Malware</i> (${availableCards.length} tersisa)
               </h3>
-              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pb-4">
                 ${availableCards.map(card => `
-                  <div class="malware-card cursor-move rounded-xl p-4 transition-all duration-300 hover:scale-105"
+                  <div class="malware-card cursor-move rounded-xl p-3 transition-all duration-300 hover:scale-105"
                     draggable="true"
                     data-card-id="${card.id}"
                     style="background-color: ${config.surface_color}; border: 2px solid ${config.primary_color};">
-                    <h4 class="font-bold mb-2" style="font-size: ${config.font_size}px;">
+                    <h4 class="font-bold mb-2" style="font-size: ${config.font_size * 0.875}px;">
                       ${card.title}
                     </h4>
-                    <p style="font-size: ${config.font_size * 0.875}px; opacity: 0.9;">
+                    <p style="font-size: ${config.font_size * 0.75}px; opacity: 0.9;">
                       ${card.description}
                     </p>
                   </div>
@@ -626,8 +626,8 @@
             </div>
             
             <!-- Feedback Area -->
-            <div id="feedback-area" class="mt-4 rounded-xl p-4 text-center transition-all duration-300" 
-              style="min-height: 80px; background-color: ${config.surface_color}; display: none;">
+            <div id="feedback-area" class="rounded-xl p-3 text-center transition-all duration-300" 
+              style="min-height: 60px; background-color: ${config.surface_color}; display: none;">
             </div>
           </div>
         </div>
@@ -991,5 +991,5 @@
 
     render();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b7e945273b1e9d5',t:'MTc2NzQwMjIzOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b7eac62f116e9d5',t:'MTc2NzQwMzIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
