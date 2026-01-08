@@ -111,7 +111,7 @@
                     "<em>Fileless malware</em> berbasis memori."
                 ],
                 correct: 1,
-                explanation: "<em>Double extortion ransomware</em> adalah teknik modern di mana penyerang tidak hanya mengenkripsi data tetapi juga mencuri data sebelum enkripsi. Korban menghadapi ancaman ganda, yaitu kehilangan akses data DAN kebocoran data publik, membuat mereka lebih tertekan untuk membayar tebusan."
+                explanation: "<em>Double extortion ransomware</em> adalah teknik modern di mana penyerang tidak hanya mengenkripsi data tetapi juga mencuri data sebelum enkripsi. Korban menghadapi ancaman ganda: kehilangan akses data DAN kebocoran data publik, membuat mereka lebih tertekan untuk membayar tebusan."
             },
             
             // Benar/Salah
@@ -183,7 +183,7 @@
             // Menjodohkan (disesuaikan jadi multiple choice dengan konteks)
             {
                 type: "matching",
-                question: "Pasangkan teknik serangan <em>malware</em> tingkat lanjut dengan karakteristiknya.",
+                question: "Pasangkan teknik serangan <em>malware</em> tingkat lanjut dengan karakteristiknya",
                 pairs: [
                     { term: "Fileless Malware", definition: "Beroperasi di memori tanpa menyimpan <em>file</em> di <em>disk</em>." },
                     { term: "Rootkit", definition: "Menyembunyikan keberadaannya dengan memodifikasi sistem operasi." },
@@ -444,6 +444,131 @@
                     initAudio();
                     playSound('click');
                     initializeQuiz();
+                    quizState = 'intro';
+                    renderApp();
+                };
+                
+            } else if (quizState === 'intro') {
+                app.innerHTML = `
+                    <div class="min-h-full p-8">
+                        <div class="max-w-5xl mx-auto">
+                            <!-- Back button -->
+                            <div class="mb-6">
+                                <button id="backToHomeBtn" style="background: linear-gradient(135deg, ${surfaceColor}, #fde68a); color: ${textColor}; font-size: ${baseFontSize * 1}px; font-weight: 600; padding: 12px 24px; border-radius: 12px; border: 2px solid ${primaryColor}; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                    ← Kembali ke Halaman Awal
+                                </button>
+                            </div>
+                            
+                            <div class="fade-in" style="background-color: ${surfaceColor}; border-radius: 24px; padding: 48px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); border: 3px solid ${primaryColor};">
+                                <div style="text-align: center; margin-bottom: 40px;">
+                                    <div style="font-size: ${baseFontSize * 4}px; margin-bottom: 16px;">📚 🎮 🎯</div>
+                                    <h2 style="font-size: ${baseFontSize * 2.2}px; font-weight: 700; margin-bottom: 16px; background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Cara Bermain</h2>
+                                    <p style="font-size: ${baseFontSize * 1.1}px; color: ${textColor}; opacity: 0.8;">Pahami aturan permainan sebelum memulai permainan!</p>
+                                </div>
+                                
+                                <!-- Game Rules -->
+                                <div style="display: flex; flex-direction: column; gap: 24px; margin-bottom: 40px;">
+                                    <!-- Rule 1 -->
+                                    <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 24px; border-radius: 16px; border-left: 6px solid #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.2);">
+                                        <div style="display: flex; align-items: start; gap: 16px;">
+                                            <div style="font-size: ${baseFontSize * 2.5}px; flex-shrink: 0;">1️⃣</div>
+                                            <div>
+                                                <h3 style="font-size: ${baseFontSize * 1.3}px; font-weight: 700; margin-bottom: 8px; color: #1e40af;">10 Soal Acak</h3>
+                                                <p style="font-size: ${baseFontSize * 1.05}px; line-height: 1.6; color: ${textColor};">Setiap permainan akan memberikan 10 soal yang dipilih secara acak dari bank soal. Soal bervariasi dari Pilihan Ganda, Benar/Salah, hingga Menjodohkan.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Rule 2 -->
+                                    <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 24px; border-radius: 16px; border-left: 6px solid ${primaryColor}; box-shadow: 0 4px 12px rgba(245,158,11,0.2);">
+                                        <div style="display: flex; align-items: start; gap: 16px;">
+                                            <div style="font-size: ${baseFontSize * 2.5}px; flex-shrink: 0;">2️⃣</div>
+                                            <div>
+                                                <h3 style="font-size: ${baseFontSize * 1.3}px; font-weight: 700; margin-bottom: 8px; color: #92400e;">Jenis-Jenis Soal</h3>
+                                                <ul style="font-size: ${baseFontSize * 1.05}px; line-height: 1.6; color: ${textColor}; margin-left: 20px;">
+                                                    <li><strong>Pilihan Ganda:</strong> Pilih satu jawaban yang paling tepat.</li>
+                                                    <li><strong>Benar/Salah:</strong> Tentukan apakah pernyataan benar atau salah.</li>
+                                                    <li><strong>Pilihan Ganda Kompleks:</strong> Pilih beberapa jawaban yang benar.</li>
+                                                    <li><strong>Isi Titik-titik:</strong> Lengkapi kalimat dengan pilihan yang tepat.</li>
+                                                    <li><strong>Menjodohkan:</strong> Tarik garis untuk mencocokkan istilah dengan karakteristik.</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Rule 3 -->
+                                    <div style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 24px; border-radius: 16px; border-left: 6px solid #10b981; box-shadow: 0 4px 12px rgba(16,185,129,0.2);">
+                                        <div style="display: flex; align-items: start; gap: 16px;">
+                                            <div style="font-size: ${baseFontSize * 2.5}px; flex-shrink: 0;">3️⃣</div>
+                                            <div>
+                                                <h3 style="font-size: ${baseFontSize * 1.3}px; font-weight: 700; margin-bottom: 8px; color: #065f46;">Feedback Langsung</h3>
+                                                <p style="font-size: ${baseFontSize * 1.05}px; line-height: 1.6; color: ${textColor};">Setelah menjawab, kamu akan langsung mendapat feedback apakah jawabanmu benar atau salah, beserta penjelasan lengkap untuk setiap soal.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Rule 4 -->
+                                    <div style="background: linear-gradient(135deg, #e9d5ff, #d8b4fe); padding: 24px; border-radius: 16px; border-left: 6px solid ${secondaryColor}; box-shadow: 0 4px 12px rgba(139,92,246,0.2);">
+                                        <div style="display: flex; align-items: start; gap: 16px;">
+                                            <div style="font-size: ${baseFontSize * 2.5}px; flex-shrink: 0;">4️⃣</div>
+                                            <div>
+                                                <h3 style="font-size: ${baseFontSize * 1.3}px; font-weight: 700; margin-bottom: 8px; color: #5b21b6;">Skor Akhir</h3>
+                                                <p style="font-size: ${baseFontSize * 1.05}px; line-height: 1.6; color: ${textColor};">Di akhir permainan, kamu akan melihat skor totalmu dan bisa memulai permainan baru dengan soal-soal yang berbeda!</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Tips Section -->
+                                <div style="background: linear-gradient(135deg, #fecaca, #fca5a5); padding: 24px; border-radius: 16px; margin-bottom: 32px; border: 2px solid #ef4444; box-shadow: 0 4px 12px rgba(239,68,68,0.2);">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                        <span style="font-size: ${baseFontSize * 2}px;">💡</span>
+                                        <h3 style="font-size: ${baseFontSize * 1.3}px; font-weight: 700; color: #991b1b;">Tips Bermain</h3>
+                                    </div>
+                                    <ul style="font-size: ${baseFontSize * 1.05}px; line-height: 1.8; color: #7f1d1d; margin-left: 20px;">
+                                        <li>Baca setiap soal dengan teliti sebelum menjawab</li>
+                                        <li>Perhatikan kata kunci dalam soal seperti "TIDAK", "KECUALI", atau "SEMUA"</li>
+                                        <li>Untuk soal menjodohkan, tarik garis dari titik kiri ke titik kanan</li>
+                                        <li>Jangan ragu untuk belajar dari penjelasan setiap soal</li>
+                                    </ul>
+                                </div>
+                                
+                                <div style="text-align: center;">
+                                    <button id="startQuizBtn" style="background: linear-gradient(135deg, ${primaryColor}, #dc2626); color: white; font-size: ${baseFontSize * 1.3}px; font-weight: 700; padding: 24px 56px; border-radius: 16px; border: none; cursor: pointer; box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);">
+                                        🎮 Mulai Bermain Sekarang!
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const backBtn = document.getElementById('backToHomeBtn');
+                backBtn.onmouseover = () => {
+                    backBtn.style.transform = 'translateX(-4px)';
+                    backBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.15)';
+                };
+                backBtn.onmouseout = () => {
+                    backBtn.style.transform = 'translateX(0)';
+                    backBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                };
+                backBtn.onclick = () => {
+                    playSound('click');
+                    quizState = 'start';
+                    renderApp();
+                };
+                
+                const startQuizBtn = document.getElementById('startQuizBtn');
+                startQuizBtn.onmouseover = () => {
+                    startQuizBtn.style.transform = 'scale(1.05) translateY(-2px)';
+                    startQuizBtn.style.boxShadow = '0 12px 32px rgba(245, 158, 11, 0.5)';
+                };
+                startQuizBtn.onmouseout = () => {
+                    startQuizBtn.style.transform = 'scale(1)';
+                    startQuizBtn.style.boxShadow = '0 8px 24px rgba(245, 158, 11, 0.4)';
+                };
+                startQuizBtn.onclick = () => {
+                    playSound('click');
                     quizState = 'quiz';
                     renderApp();
                 };
@@ -523,6 +648,13 @@
                 app.innerHTML = `
                     <div class="min-h-full p-8">
                         <div class="max-w-5xl mx-auto">
+                            <!-- Back button -->
+                            <div class="mb-6">
+                                <button id="backToIntroBtn" style="background: linear-gradient(135deg, ${surfaceColor}, #fde68a); color: ${textColor}; font-size: ${baseFontSize * 1}px; font-weight: 600; padding: 12px 24px; border-radius: 12px; border: 2px solid ${primaryColor}; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                    ← Kembali
+                                </button>
+                            </div>
+                            
                             <div class="mb-6">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                     <span style="font-size: ${baseFontSize * 0.9}px; color: ${textColor}; font-weight: 600;">Soal ${currentQuestion + 1} dari ${quizData.length}</span>
@@ -565,6 +697,25 @@
                         </div>
                     </div>
                 `;
+                
+                const backToIntroBtn = document.getElementById('backToIntroBtn');
+                backToIntroBtn.onmouseover = () => {
+                    backToIntroBtn.style.transform = 'translateX(-4px)';
+                    backToIntroBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.15)';
+                };
+                backToIntroBtn.onmouseout = () => {
+                    backToIntroBtn.style.transform = 'translateX(0)';
+                    backToIntroBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                };
+                backToIntroBtn.onclick = () => {
+                    playSound('click');
+                    quizState = 'intro';
+                    currentQuestion = 0;
+                    userAnswers = [];
+                    showingFeedback = false;
+                    matchingProgress = {};
+                    renderApp();
+                };
                 
                 if (question.type === 'mcma') {
                     const submitBtn = document.getElementById('submitMcmaBtn');
@@ -1081,5 +1232,5 @@
 
         renderApp();
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b7fb2df453be9d5',t:'MTc2NzQxMzk3NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ba9f1035356e9cd',t:'MTc2Nzg1NjkyMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
